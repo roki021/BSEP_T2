@@ -54,7 +54,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint).and()
-            .authorizeRequests().antMatchers("/auth/**").permitAll().antMatchers("/h2-console/**").permitAll()
+            .authorizeRequests()
+                .antMatchers("/auth/**").permitAll()
+                .antMatchers("/h2-console/**").permitAll()
+                .antMatchers("/api/**").permitAll() // TODO: remove me
             .anyRequest().authenticated().and()
             .cors().and()
             .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),

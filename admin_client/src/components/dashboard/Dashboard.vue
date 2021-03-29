@@ -15,6 +15,13 @@
         >
           Certificates
         </vs-navbar-item>
+        <vs-navbar-item
+          :active="active == 'requests'"
+          v-on:click="$router.push('requests')"
+          id="requests"
+        >
+          Requests
+        </vs-navbar-item>
         <vs-navbar-item :active="active == 'hospitals'" v-on:click="$router.push('hospitals')" id="hospitals">
           Hospitals
         </vs-navbar-item>
@@ -42,13 +49,20 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .dashboard {
   width: 100%;
   height: 100%;
 }
 
 .general {
-  padding-top: 80px;
+  padding-top: 100px;
+}
+
+.container {
+    padding: 20px;
+    border: 1px solid transparent;
+    background: #ffffff;
+    border-radius: 8px;
 }
 </style>

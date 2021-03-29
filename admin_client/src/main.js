@@ -3,6 +3,7 @@ import App from './App.vue'
 import Login from './components/auth/Login.vue'
 import Dashboard from './components/dashboard/Dashboard.vue'
 import Certificates from './components/dashboard/Certificates.vue'
+import Requests from './components/dashboard/Requests.vue'
 import VueRouter from 'vue-router'
 import Vuesax from 'vuesax'
 import 'vuesax/dist/vuesax.css'
@@ -19,6 +20,10 @@ const routes = [
       {
         path: 'certificates',
         component: Certificates
+      },
+      {
+        path: 'requests',
+        component: Requests
       }
     ]
   },
