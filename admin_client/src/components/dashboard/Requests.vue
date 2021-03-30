@@ -20,7 +20,7 @@
                   {{ tr.commonName }}
                 </vs-td>
                 <vs-td>
-                  <vs-button transparent @click="active = !active"
+                  <vs-button transparent @click="activate(i)"
                     >Details</vs-button
                   >
                 </vs-td>
@@ -36,36 +36,60 @@
       </template>
 
       <div class="con-form">
-        <div class="center">
-          <vs-select placeholder="Select" v-model="template">
-            <vs-option label="Vuesax" value="1">
-              Vuesax
+        <div class="center grid">
+          <vs-row v-if="activeRequest.commonName">
+            <vs-col w="6"><div class="wrapper"><b>Common name</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.commonName }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="activeRequest.surname">
+            <vs-col w="6"><div class="wrapper"><b>Surname</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.surname }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="activeRequest.givenName">
+            <vs-col w="6"><div class="wrapper"><b>Given name</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.givenName }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="activeRequest.organization">
+            <vs-col w="6"><div class="wrapper"><b>Organization</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.organization }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="activeRequest.organizationUnit">
+            <vs-col w="6"><div class="wrapper"><b>Organization unit</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.organizationUnit }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="activeRequest.country">
+            <vs-col w="6"><div class="wrapper"><b>Country</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.country }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="activeRequest.email">
+            <vs-col w="6"><div class="wrapper"><b>Email</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.email }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="activeRequest.uniqueIdentifier">
+            <vs-col w="6"><div class="wrapper"><b>Unique identifier</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.uniqueIdentifier }}</div></vs-col>
+          </vs-row>
+          <vs-row align="center" justify="center">
+            <vs-col w="6"><div class="wrapper-template-input"><b>Template</b></div></vs-col>
+            <vs-col w="6">
+              <div class="wrapper-template-input">
+                <vs-select placeholder="Select" v-model="template">
+            <vs-option label="INTERMEDIATE" value="intermediate">
+              INTERMEDIATE
             </vs-option>
-            <vs-option label="Vue" value="2">
-              Vue
-            </vs-option>
-            <vs-option label="Javascript" value="3">
-              Javascript
-            </vs-option>
-            <vs-option disabled label="Sass" value="4">
-              Sass
-            </vs-option>
-            <vs-option label="Typescript" value="5">
-              Typescript
-            </vs-option>
-            <vs-option label="Webpack" value="6">
-              Webpack
-            </vs-option>
-            <vs-option label="Nodejs" value="7">
-              Nodejs
+            <vs-option label="LEAF" value="leaf">
+              LEAF
             </vs-option>
           </vs-select>
+              </div>
+            </vs-col>
+          </vs-row>
         </div>
       </div>
 
       <template #footer>
         <div class="footer-dialog">
-          <vs-button block> Issue certificate </vs-button>
+          <vs-button :loading="waitingResponse" block v-on:click="issueCertificate()"> Issue certificate </vs-button>
         </div>
       </template>
     </vs-dialog>
@@ -78,11 +102,41 @@ export default {
   data: () => ({
     requests: [],
     active: false,
-    template: ''
+    activeRequest: {},
+    activeRequestIndex: 0,
+    waitingResponse: false,
+    template: 'leaf'
   }),
+  methods: {
+    activate (index) {
+      this.active = true
+      this.activeRequestIndex = index
+      this.activeRequest = this.requests[index]
+    },
+    issueCertificate () {
+      this.waitingResponse = true;
+
+      axios
+      .post(`http://localhost:8080/api/issue-certificate/${this.activeRequest.id}/${this.template}`)
+      .then(() => {
+        this.waitingResponse = false;
+        this.active = false;
+
+        // success, remove from 
+        this.requests.splice(this.activeRequestIndex, 1)
+
+        this.$vs.notification({
+            color: 'success',
+            position: null,
+            title: 'Successfully issued',
+            text: 'New CER successfully created and distributed to subject.'
+        })
+      })
+    }
+  },
   mounted() {
     axios
-      .get("http://localhost:8080/api/certificate-signing-requests")
+      .get('http://localhost:8080/api/certificate-signing-requests')
       .then((response) => {
         this.requests = response.data;
       });
@@ -92,5 +146,13 @@ export default {
 <style scoped>
 * {
   font-size: 13px !important;
+}
+
+.wrapper {
+  padding-top: 15px;
+}
+
+.wrapper-template-input, .footer-dialog {
+  padding-top: 30px;
 }
 </style>

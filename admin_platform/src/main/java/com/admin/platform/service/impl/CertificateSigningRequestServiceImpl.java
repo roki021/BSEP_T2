@@ -1,5 +1,6 @@
 package com.admin.platform.service.impl;
 
+import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.CertificateSigningRequest;
 import com.admin.platform.repository.CertificateSigningRequestRepository;
 import com.admin.platform.service.CertificateSigningRequestService;
@@ -8,6 +9,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
@@ -29,13 +31,32 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
     @Autowired
     private CertificateSigningRequestRepository certificateSigningRequestRepository;
 
-    public void saveRequest(byte[] request) throws IOException {
+    public void saveRequest(byte[] request) throws IOException, UnexpectedSituation {
         PKCS10CertificationRequest csr = this.extractCertificationRequest(request);
 
         X500Name x500Name = csr.getSubject();
-        String common = IETFUtils.valueToString(x500Name.getRDNs(BCStyle.CN)[0].getFirst().getValue());
 
-        certificateSigningRequestRepository.save(new CertificateSigningRequest(common, request));
+        String commonName = getCRSX509NameField(x500Name, BCStyle.CN);
+        String surname = getCRSX509NameField(x500Name, BCStyle.SURNAME);
+        String givenName = getCRSX509NameField(x500Name, BCStyle.GIVENNAME);
+        String organization = getCRSX509NameField(x500Name, BCStyle.O);
+        String organizationUnit = getCRSX509NameField(x500Name, BCStyle.OU);
+        String country = getCRSX509NameField(x500Name, BCStyle.C);
+        String email = getCRSX509NameField(x500Name, BCStyle.E);
+        String serialNumber = getCRSX509NameField(x500Name, BCStyle.SERIALNUMBER);
+
+        certificateSigningRequestRepository.save(
+                new CertificateSigningRequest(
+                        commonName,
+                        surname,
+                        givenName,
+                        organization,
+                        organizationUnit,
+                        country,
+                        email,
+                        serialNumber,
+                        request));
+
     }
 
     @Override
@@ -54,5 +75,17 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         }
 
         throw new IOException();
+    }
+
+    private String getCRSX509NameField(X500Name x500Name, ASN1ObjectIdentifier field) throws UnexpectedSituation {
+        RDN[] rdn = x500Name.getRDNs(field);
+
+        if (rdn.length == 0)
+            return "";
+        else if (rdn.length != 1)
+            throw new UnexpectedSituation(
+                    "CertificateSigningRequestService: RDN expected only one param. (given: " + rdn.length + ")");
+
+        return IETFUtils.valueToString(rdn[0].getFirst().getValue());
     }
 }

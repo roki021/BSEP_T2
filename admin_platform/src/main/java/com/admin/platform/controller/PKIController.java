@@ -1,6 +1,9 @@
 package com.admin.platform.controller;
 
 import com.admin.platform.dto.CertificateSigningRequestDTO;
+import com.admin.platform.dto.JSONExceptionMessage;
+import com.admin.platform.exception.JSONException;
+import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.service.CertificateSigningRequestService;
 import com.admin.platform.service.impl.CertificateSigningRequestServiceImpl;
 import org.apache.coyote.Response;
@@ -27,7 +30,7 @@ public class PKIController {
 
     @PostMapping("/external/certificate-signing-requests")
     public ResponseEntity<?> receiveCertificateSigningRequest(
-            @RequestBody byte[] request) throws IOException {
+            @RequestBody byte[] request) throws IOException, UnexpectedSituation {
 
         csrService.saveRequest(request);
 
@@ -36,12 +39,24 @@ public class PKIController {
 
     @PostMapping("/issue-certificate/{csrId}/{templateName}")
     public ResponseEntity<?> issueCertificate(@PathVariable Long csrId, @PathVariable String templateName) {
-        //TODO
+        //TODO: .. remove crs?
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
     @ExceptionHandler({ IOException.class })
-    public ResponseEntity<?> handleException() {
+    public ResponseEntity<?> handleIOException() {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({ JSONException.class })
+    public ResponseEntity<?> handleJSONException(JSONException exception) {
+        return new ResponseEntity<>(
+                new JSONExceptionMessage(exception.getErrorCode(), exception.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
