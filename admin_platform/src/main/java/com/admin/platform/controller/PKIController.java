@@ -7,6 +7,7 @@ import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.service.CertificateSigningRequestService;
 import com.admin.platform.service.impl.CertificateSigningRequestServiceImpl;
 import org.apache.coyote.Response;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,8 +49,8 @@ public class PKIController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @ExceptionHandler({ IOException.class })
-    public ResponseEntity<?> handleIOException() {
+    @ExceptionHandler({ IOException.class, ConstraintViolationException.class })
+    public ResponseEntity<?> handleBadRequestException() {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
