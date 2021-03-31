@@ -64,6 +64,11 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         return certificateSigningRequestRepository.findAll();
     }
 
+    @Override
+    public CertificateSigningRequest findById(Long id) {
+        return certificateSigningRequestRepository.findById(id);
+    }
+
     private PKCS10CertificationRequest extractCertificationRequest(byte[] rawRequest) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(rawRequest);
         Reader pemReader = new BufferedReader(new InputStreamReader(bis));

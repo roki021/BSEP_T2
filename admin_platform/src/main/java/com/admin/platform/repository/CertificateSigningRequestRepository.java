@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CertificateSigningRequestRepository extends JpaRepository<CertificateSigningRequest, String> {
+    CertificateSigningRequest findById(Long id);
 }

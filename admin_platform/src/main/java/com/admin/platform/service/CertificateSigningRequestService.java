@@ -13,4 +13,5 @@ public interface CertificateSigningRequestService {
 
     List<CertificateSigningRequest> getAll();
 
+    CertificateSigningRequest findById(Long id);
 }
