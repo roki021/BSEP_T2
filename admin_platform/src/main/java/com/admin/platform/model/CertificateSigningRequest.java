@@ -4,8 +4,9 @@ import javax.persistence.*;
 
 @Entity
 public class CertificateSigningRequest {
+    @TableGenerator(name = "CSR_GEN", table = "ID_GEN", pkColumnName = "GEN_NAME", valueColumnName = "GEN_VAL", pkColumnValue = "csr_gen", initialValue = 1, allocationSize = 100)
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "CSR_GEN")
     private Long id;
 
     @Column(unique = true)

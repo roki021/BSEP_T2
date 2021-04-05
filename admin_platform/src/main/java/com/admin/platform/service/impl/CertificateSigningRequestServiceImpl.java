@@ -16,10 +16,14 @@ import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -67,6 +71,21 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
     @Override
     public CertificateSigningRequest findById(Long id) {
         return certificateSigningRequestRepository.findById(id);
+    }
+
+    @Override
+    public PublicKey getPublicKeyFromCSR(Long id) {
+        try {
+            PKCS10CertificationRequest csr = extractCertificationRequest(findById(id).getFullCertificate());
+
+            JcaPKCS10CertificationRequest jcaCertRequest =
+                    new JcaPKCS10CertificationRequest(csr.getEncoded()).setProvider("BC");
+            return jcaCertRequest.getPublicKey();
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     private PKCS10CertificationRequest extractCertificationRequest(byte[] rawRequest) throws IOException {

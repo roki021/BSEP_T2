@@ -1,10 +1,12 @@
 package com.admin.platform.controller;
 
+import com.admin.platform.constants.TemplateTypes;
 import com.admin.platform.dto.CertificateSigningRequestDTO;
 import com.admin.platform.dto.JSONExceptionMessage;
 import com.admin.platform.exception.JSONException;
 import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.service.CertificateSigningRequestService;
+import com.admin.platform.service.DigitalCertificateService;
 import com.admin.platform.service.impl.CertificateSigningRequestServiceImpl;
 import org.apache.coyote.Response;
 import org.hibernate.exception.ConstraintViolationException;
@@ -22,6 +24,9 @@ public class PKIController {
 
     @Autowired
     private CertificateSigningRequestServiceImpl csrService;
+
+    @Autowired
+    private DigitalCertificateService digitalCertificateService;
 
     @GetMapping("/certificate-signing-requests")
     public ResponseEntity<?> getCertificateSigningRequests() {
@@ -41,11 +46,13 @@ public class PKIController {
     @PostMapping("/issue-certificate/{csrId}/{templateName}")
     public ResponseEntity<?> issueCertificate(@PathVariable Long csrId, @PathVariable String templateName) {
         //TODO: .. remove crs?
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+        if (!templateName.equals(TemplateTypes.ROOT.toString()) &&
+                !templateName.equals(TemplateTypes.LEAF_HOSPITAL.toString())) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+
+        this.digitalCertificateService.createCertificate(csrId, TemplateTypes.valueOf(templateName));
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 

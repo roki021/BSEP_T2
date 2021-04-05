@@ -1,6 +1,8 @@
 package com.admin.platform.service.impl;
 
+import com.admin.platform.config.PlatfromKeyStore;
 import com.admin.platform.constants.CryptConstants;
+import com.admin.platform.constants.TemplateTypes;
 import com.admin.platform.model.CertificateSigningRequest;
 import com.admin.platform.model.DigitalCertificate;
 import com.admin.platform.model.IssuerData;
@@ -9,6 +11,8 @@ import com.admin.platform.repository.DigitalCertificateRepository;
 import com.admin.platform.service.CertificateSigningRequestService;
 import com.admin.platform.service.DigitalCertificateService;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyUsage;
@@ -19,15 +23,19 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
@@ -42,17 +50,74 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     @Autowired
     private CertificateSigningRequestService certificateSigningRequestService;
 
+    @Autowired
+    private PlatfromKeyStore platfromKeyStore;
+
     @Override
-    public void createCertificate(Long csrId, String templateName) {
-        CertificateSigningRequest crs = certificateSigningRequestService.findById(csrId);
-        //TODO: template selection and adding extensions to certificate
+    public DigitalCertificate createCertificate(Long csrId, TemplateTypes templateType) {
+        CertificateSigningRequest csr = certificateSigningRequestService.findById(csrId);
 
+        PrivateKey issuerKey = readPrivateKey(platfromKeyStore.getKEYSTORE_FILE_PATH(),
+                platfromKeyStore.getKEYSTORE_PASSWORD(), CryptConstants.ROOT_ALIAS,
+                platfromKeyStore.getKEYSTORE_PASSWORD());
+        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+        builder.addRDN(BCStyle.CN, "ROOT");
+        builder.addRDN(BCStyle.O, "MZ-Srbija");
+        builder.addRDN(BCStyle.OU, "Klinicki centar");
+        builder.addRDN(BCStyle.L, "Novi Sad");
+        builder.addRDN(BCStyle.C, "RS");
+        IssuerData issuerData = generateIssuerData(issuerKey, builder.build());
+        X500NameBuilder subjectName = generateName(csr);
+        SubjectData subjectData = generateSubjectData(
+                certificateSigningRequestService.getPublicKeyFromCSR(csrId),
+                subjectName.build(), TemplateTypes.LEAF_HOSPITAL, String.valueOf(csr.getId()));
 
+        String keyStorePath = "pki/keystore/keyStore_" + csr.getId() + ".jks";
+        char[] keyStorePass = csr.getId().toString().toCharArray();
+
+        X509Certificate certificate = generateCertificate(subjectData, issuerData, TemplateTypes.LEAF_HOSPITAL);
+        DigitalCertificate digitalCertificate = new DigitalCertificate(
+                new BigInteger(csr.getId().toString()));
+        digitalCertificate.setStartDate(new java.sql.Timestamp(subjectData.getStartDate().getTime()));
+        digitalCertificate.setEndDate(new java.sql.Timestamp(subjectData.getEndDate().getTime()));
+        digitalCertificate.setCommonName(TemplateTypes.LEAF_HOSPITAL.toString());
+        digitalCertificate.setCertKeyStorePath(keyStorePath);
+
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
+            File f = new File(keyStorePath);
+            if (f.exists()){
+                keyStore.load(new FileInputStream(f), keyStorePass);
+            }else {
+                keyStore.load(null, keyStorePass);
+
+                save(digitalCertificate);
+
+                keyStore.setKeyEntry(CryptConstants.ROOT_ALIAS, issuerKey,
+                        keyStorePass, new Certificate[]{certificate});
+
+                keyStore.store(new FileOutputStream(keyStorePath), keyStorePass);
+
+                return digitalCertificate;
+            }
+        } catch (IOException | CertificateException | NoSuchAlgorithmException |
+                NoSuchProviderException | KeyStoreException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @Override
-    public void createCertificate(String templateName) {
+    public DigitalCertificate createCertificate(String templateName) {
+        return null;
+    }
 
+    @Override
+    public DigitalCertificate save(DigitalCertificate digitalCertificate) {
+        return digitalCertificateRepository.save(digitalCertificate);
     }
 
     @Override
@@ -83,18 +148,29 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     }
 
     @Override
-    public SubjectData generateSubjectData(PublicKey publicKey, X500Name name) {
+    public SubjectData generateSubjectData(PublicKey publicKey, X500Name name,
+                                           TemplateTypes templateType, String serialNum) {
+        Date endDate;
+
+        if (templateType == TemplateTypes.ROOT) {
+            endDate = generateDate(CryptConstants.ROOT_PERIOD_MONTHS);
+        } else {
+            endDate = generateDate(CryptConstants.LEAF_PERIOD_MONTHS);
+        }
+
         return new SubjectData(
                 publicKey,
                 name,
-                String.valueOf(1000), //TODO: place different kind of generic value maybe?
+                serialNum,
                 new Date(),
-                generateDate(12)
+                endDate
         );
     }
 
     @Override
-    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData) {
+    public X509Certificate generateCertificate(SubjectData subjectData,
+                                               IssuerData issuerData,
+                                               TemplateTypes templateTypes) {
         try {
             JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
             builder = builder.setProvider("BC");
@@ -108,17 +184,23 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                     subjectData.getX500name(),
                     subjectData.getPublicKey());
 
-            certGen.addExtension(Extension.keyUsage, false,
-                    new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign));
+            if(templateTypes == TemplateTypes.ROOT) {
+                certGen.addExtension(Extension.keyUsage, false,
+                        new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign));
 
-            certGen.addExtension(Extension.basicConstraints, false, new BasicConstraints(true));
+                certGen.addExtension(Extension.basicConstraints, false, new BasicConstraints(true));
 
 
-            byte[] subjectKeyIdentifier = new JcaX509ExtensionUtils()
-                    .createSubjectKeyIdentifier(subjectData.getPublicKey()).getKeyIdentifier();
+                byte[] subjectKeyIdentifier = new JcaX509ExtensionUtils()
+                        .createSubjectKeyIdentifier(subjectData.getPublicKey()).getKeyIdentifier();
 
-            certGen.addExtension(Extension.subjectKeyIdentifier, false,
-                    new SubjectKeyIdentifier(subjectKeyIdentifier));
+                certGen.addExtension(Extension.subjectKeyIdentifier, false,
+                        new SubjectKeyIdentifier(subjectKeyIdentifier));
+            } else {
+                certGen.addExtension(Extension.keyUsage, false,
+                        new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
+                certGen.addExtension(Extension.basicConstraints, false, new BasicConstraints(false));
+            }
 
             X509CertificateHolder certHolder = certGen.build(contentSigner);
             JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
@@ -132,41 +214,28 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         return null;
     }
 
-    private X509Certificate generateCertificate(CertificateSigningRequest crs, String templateName) {
-        return null;
+    @Override
+    public void writeCertificateToFile(KeyStore keyStore, String certName, String alias, String saveDirectory) throws Exception {
+
+        java.security.cert.Certificate[] chain = keyStore.getCertificateChain(alias);
+
+        StringWriter stringWriter = new StringWriter();
+        JcaPEMWriter pm = new JcaPEMWriter(stringWriter);
+        for(Certificate certificate : chain) {
+            X509Certificate a = (X509Certificate)certificate;
+            pm.writeObject(a);
+        }
+        pm.close();
+
+
+        String fileName = certName + ".crt";
+        String path = saveDirectory + "/" + fileName;
+
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
+            writer.write(stringWriter.toString());
+        }
     }
 
-    private X509Certificate generateCertificate(CertificateSigningRequest crs) {
-        /*try {
-
-            JcaContentSignerBuilder builder = new JcaContentSignerBuilder(CryptConstants.ENCRYPTION_ALGORITHM);
-
-            builder = builder.setProvider(CryptConstants.BC_PROVIDER);
-
-            ContentSigner contentSigner = builder.build(issuerData.getPrivateKey());
-
-            X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(issuerData.getX500name(),
-                    new BigInteger(crs.getId().toString()),
-                    new Date(),
-                    subjectData.getEndDate(),
-                    subjectData.getX500name(),
-                    subjectData.getPublicKey());
-
-            // Generise se sertifikat
-            X509CertificateHolder certHolder = certGen.build(contentSigner);
-
-            // Builder generise sertifikat kao objekat klase X509CertificateHolder
-            // Nakon toga je potrebno certHolder konvertovati u sertifikat, za sta se koristi certConverter
-            JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
-            certConverter = certConverter.setProvider("BC");
-
-            // Konvertuje objekat u sertifikat
-            return certConverter.getCertificate(certHolder);
-        } catch (IllegalArgumentException | IllegalStateException | OperatorCreationException | CertificateException e) {
-            e.printStackTrace();
-        }*/
-        return null;
-    }
 
     private Date generateDate(int periodInMonths) {
         Calendar calendarLater = Calendar.getInstance();
@@ -175,5 +244,32 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         calendarLater.add(Calendar.MONTH, periodInMonths);
 
         return calendarLater.getTime();
+    }
+
+    public PrivateKey readPrivateKey(String keyStoreFile, String keyStorePass, String alias, String pass) {
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS", "SUN");
+            BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
+            ks.load(in, keyStorePass.toCharArray());
+
+            if (ks.isKeyEntry(alias)) {
+                PrivateKey pk = (PrivateKey) ks.getKey(alias, pass.toCharArray());
+                return pk;
+            }
+        } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException
+                | IOException | UnrecoverableKeyException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private X500NameBuilder generateName(CertificateSigningRequest csr) {
+        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+        builder.addRDN(BCStyle.CN, csr.getCommonName());
+        builder.addRDN(BCStyle.O, csr.getOrganization());
+        builder.addRDN(BCStyle.OU, csr.getOrganizationUnit());
+        builder.addRDN(BCStyle.C, csr.getCountry());
+        builder.addRDN(BCStyle.EmailAddress, csr.getEmail());
+        return builder;
     }
 }

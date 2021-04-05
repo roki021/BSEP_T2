@@ -1,6 +1,8 @@
 package com.admin.platform.config;
 
 import com.admin.platform.constants.CryptConstants;
+import com.admin.platform.constants.TemplateTypes;
+import com.admin.platform.model.DigitalCertificate;
 import com.admin.platform.model.IssuerData;
 import com.admin.platform.model.SubjectData;
 import com.admin.platform.service.DigitalCertificateService;
@@ -13,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -37,15 +40,18 @@ public class PlatfromKeyStore {
     public KeyStore setUpPKI() {
        try {
            KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
-           KeyStore trustStore = KeyStore.getInstance("JKS", "SUN");
            File f = new File(KEYSTORE_FILE_PATH);
            if (f.exists()){
                keyStore.load(new FileInputStream(f), KEYSTORE_PASSWORD.toCharArray());
            }else {
                keyStore.load(null, KEYSTORE_PASSWORD.toCharArray());
 
-               X509Certificate root_cert = generateRoot(keyStore);
-               this.writeCertificateToFile(keyStore, CryptConstants.ROOT_ALIAS);
+               DigitalCertificate root_cert = generateRoot(keyStore);
+               digitalCertificateService.writeCertificateToFile(keyStore,
+                       TemplateTypes.ROOT.toString().toLowerCase(),
+                       CryptConstants.ROOT_ALIAS, certDirectory);
+
+                digitalCertificateService.save(root_cert);
 
                keyStore.store(new FileOutputStream(KEYSTORE_FILE_PATH), KEYSTORE_PASSWORD.toCharArray());
            }
@@ -60,7 +66,19 @@ public class PlatfromKeyStore {
         return null;
     }
 
-    private X509Certificate generateRoot(KeyStore keyStore) throws KeyStoreException {
+    public String getKEYSTORE_FILE_PATH() {
+        return KEYSTORE_FILE_PATH;
+    }
+
+    public String getKEYSTORE_PASSWORD() {
+        return KEYSTORE_PASSWORD;
+    }
+
+    public String getCertDirectory() {
+        return certDirectory;
+    }
+
+    private DigitalCertificate generateRoot(KeyStore keyStore) throws KeyStoreException {
         KeyPair kp = digitalCertificateService.generateKeyPair();
 
         X500NameBuilder builder = generateName("ROOT");
@@ -68,16 +86,23 @@ public class PlatfromKeyStore {
         IssuerData issuerData =
                 digitalCertificateService.generateIssuerData(kp.getPrivate(), builder.build());
         SubjectData subjectData = digitalCertificateService.generateSubjectData
-                (kp.getPublic(), builder.build());
+                (kp.getPublic(), builder.build(), TemplateTypes.ROOT, CryptConstants.ROOT_ALIAS);
 
         subjectData.setSerialNumber(CryptConstants.ROOT_ALIAS);
-        Certificate certificate = digitalCertificateService.generateCertificate
-                (subjectData, issuerData);
+        X509Certificate certificate = digitalCertificateService.generateCertificate
+                (subjectData, issuerData, TemplateTypes.ROOT);
 
         keyStore.setKeyEntry(CryptConstants.ROOT_ALIAS, kp.getPrivate(),
                 KEYSTORE_PASSWORD.toCharArray(), new Certificate[]{certificate});
 
-        return (X509Certificate) certificate;
+        DigitalCertificate digitalCertificate = new DigitalCertificate(
+                new BigInteger(subjectData.getSerialNumber()));
+        digitalCertificate.setStartDate(new java.sql.Timestamp(subjectData.getStartDate().getTime()));
+        digitalCertificate.setEndDate(new java.sql.Timestamp(subjectData.getEndDate().getTime()));
+        digitalCertificate.setCommonName(TemplateTypes.ROOT.toString());
+        digitalCertificate.setCertKeyStorePath(certDirectory + "/root.crt");
+
+        return digitalCertificate;
     }
 
     private X500NameBuilder generateName(String CN){
@@ -88,27 +113,5 @@ public class PlatfromKeyStore {
         builder.addRDN(BCStyle.L, "Novi Sad");
         builder.addRDN(BCStyle.C, "RS");
         return builder;
-    }
-
-    private void writeCertificateToFile(KeyStore keyStore, String alias) throws Exception {
-
-        Certificate[] chain = keyStore.getCertificateChain(alias);
-
-        StringWriter sw = new StringWriter();
-        JcaPEMWriter pm = new JcaPEMWriter(sw);
-        for(Certificate certificate : chain) {
-            X509Certificate a = (X509Certificate)certificate;
-            pm.writeObject(a);
-        }
-        pm.close();
-
-
-        String fileName = "cert_" + alias + ".crt";
-        String path = certDirectory + "/" + fileName;
-
-
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
-            writer.write(sw.toString());
-        }
     }
 }

@@ -23,6 +23,14 @@ public class DigitalCertificate  {
     @Column
     private String certKeyStorePath;
 
+    public DigitalCertificate() {
+
+    }
+
+    public DigitalCertificate(BigInteger serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
     public DigitalCertificate(BigInteger serialNumber, Timestamp startDate, Timestamp endDate, String commonName, String certKeyStorePath) {
         this.serialNumber = serialNumber;
         this.startDate = startDate;

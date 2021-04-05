@@ -5,6 +5,7 @@ import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.CertificateSigningRequest;
 
 import java.io.IOException;
+import java.security.PublicKey;
 import java.util.List;
 
 public interface CertificateSigningRequestService {
@@ -14,4 +15,6 @@ public interface CertificateSigningRequestService {
     List<CertificateSigningRequest> getAll();
 
     CertificateSigningRequest findById(Long id);
+
+    PublicKey getPublicKeyFromCSR(Long id);
 }
