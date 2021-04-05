@@ -18,8 +18,6 @@ public interface DigitalCertificateService {
 
     DigitalCertificate createCertificate(Long csrId, TemplateTypes templateType);
 
-    DigitalCertificate createCertificate(String templateName);
-
     DigitalCertificate save(DigitalCertificate digitalCertificate);
 
     List<DigitalCertificate> getAll();

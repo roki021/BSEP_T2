@@ -2,6 +2,7 @@ package com.admin.platform.controller;
 
 import com.admin.platform.constants.TemplateTypes;
 import com.admin.platform.dto.CertificateSigningRequestDTO;
+import com.admin.platform.dto.DigitalCertificateDTO;
 import com.admin.platform.dto.JSONExceptionMessage;
 import com.admin.platform.exception.JSONException;
 import com.admin.platform.exception.impl.UnexpectedSituation;
@@ -54,6 +55,12 @@ public class PKIController {
 
         this.digitalCertificateService.createCertificate(csrId, TemplateTypes.valueOf(templateName));
         return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @GetMapping("/digital-certificates")
+    public ResponseEntity<?> getDigitalCertificates() {
+        return new ResponseEntity<>(
+                digitalCertificateService.getAll().stream().map(DigitalCertificateDTO::new), HttpStatus.OK);
     }
 
     @ExceptionHandler({ IOException.class, ConstraintViolationException.class })

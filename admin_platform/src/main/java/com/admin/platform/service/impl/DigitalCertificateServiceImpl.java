@@ -80,7 +80,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                 new BigInteger(csr.getId().toString()));
         digitalCertificate.setStartDate(new java.sql.Timestamp(subjectData.getStartDate().getTime()));
         digitalCertificate.setEndDate(new java.sql.Timestamp(subjectData.getEndDate().getTime()));
-        digitalCertificate.setCommonName(TemplateTypes.LEAF_HOSPITAL.toString());
+        digitalCertificate.setCommonName(csr.getCommonName());
         digitalCertificate.setCertKeyStorePath(keyStorePath);
 
         try {
@@ -111,23 +111,18 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     }
 
     @Override
-    public DigitalCertificate createCertificate(String templateName) {
-        return null;
-    }
-
-    @Override
     public DigitalCertificate save(DigitalCertificate digitalCertificate) {
         return digitalCertificateRepository.save(digitalCertificate);
     }
 
     @Override
     public List<DigitalCertificate> getAll() {
-        return null;
+        return digitalCertificateRepository.findAll();
     }
 
     @Override
     public DigitalCertificate getBySerialNumber(BigInteger serialNumber) {
-        return null;
+        return digitalCertificateRepository.findBySerialNumber(serialNumber);
     }
 
     public KeyPair generateKeyPair() {
