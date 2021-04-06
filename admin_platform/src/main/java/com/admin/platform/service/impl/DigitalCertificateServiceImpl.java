@@ -3,11 +3,9 @@ package com.admin.platform.service.impl;
 import com.admin.platform.config.PlatfromKeyStore;
 import com.admin.platform.constants.CryptConstants;
 import com.admin.platform.constants.TemplateTypes;
-import com.admin.platform.model.CertificateSigningRequest;
-import com.admin.platform.model.DigitalCertificate;
-import com.admin.platform.model.IssuerData;
-import com.admin.platform.model.SubjectData;
+import com.admin.platform.model.*;
 import com.admin.platform.repository.DigitalCertificateRepository;
+import com.admin.platform.repository.RevokedCertificateRepository;
 import com.admin.platform.service.CertificateSigningRequestService;
 import com.admin.platform.service.DigitalCertificateService;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -36,9 +34,11 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DigitalCertificateServiceImpl implements DigitalCertificateService {
@@ -48,6 +48,9 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
     @Autowired
     private CertificateSigningRequestService certificateSigningRequestService;
+
+    @Autowired
+    private RevokedCertificateRepository revokedCertificateRepository;
 
     @Autowired
     private PlatfromKeyStore platfromKeyStore;
@@ -122,7 +125,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
     @Override
     public DigitalCertificate getBySerialNumber(BigInteger serialNumber) {
-        return digitalCertificateRepository.findBySerialNumber(serialNumber);
+        return digitalCertificateRepository.findBySerialNumber(serialNumber).orElse(null);
     }
 
     public KeyPair generateKeyPair() {
@@ -229,6 +232,26 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
             writer.write(stringWriter.toString());
         }
+    }
+
+    @Override
+    public void revokeCertificate(Long serialNumber) throws Exception {
+        Optional<DigitalCertificate> cert = digitalCertificateRepository.
+                findBySerialNumber(new BigInteger(serialNumber.toString()));
+        if (cert.isEmpty()) {
+            throw new Exception("Certificate with this serial number does not exist in this context");
+        }
+
+        revokedCertificateRepository.save(new RevokedCertificate(
+                cert.get().getSerialNumber(),
+                new Timestamp(new Date().getTime())
+        ));
+    }
+
+    @Override
+    public boolean isRevoked(Long serialNumber) {
+        return revokedCertificateRepository.
+                findBySerialNumber(new BigInteger(serialNumber.toString())).isPresent();
     }
 
 

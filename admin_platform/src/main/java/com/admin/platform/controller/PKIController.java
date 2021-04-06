@@ -60,7 +60,29 @@ public class PKIController {
     @GetMapping("/digital-certificates")
     public ResponseEntity<?> getDigitalCertificates() {
         return new ResponseEntity<>(
-                digitalCertificateService.getAll().stream().map(DigitalCertificateDTO::new), HttpStatus.OK);
+                digitalCertificateService.getAll().stream().map(cert -> {
+                    DigitalCertificateDTO dto = new DigitalCertificateDTO(cert);
+                    dto.setRevoked(
+                            digitalCertificateService.isRevoked(
+                                    dto.getSerialNumber().longValue()));
+                    return dto;
+                }), HttpStatus.OK);
+    }
+
+    @GetMapping("/digital-certificates/validity/{serialNumber}")
+    public ResponseEntity<?> checkValidity(@PathVariable Long serialNumber) {
+        return new ResponseEntity<>(
+                digitalCertificateService.isRevoked(serialNumber), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/digital-certificates/{serialNumber}")
+    public ResponseEntity<?> revokeCertificate(@PathVariable Long serialNumber) {
+        try {
+            digitalCertificateService.revokeCertificate(serialNumber);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ExceptionHandler({ IOException.class, ConstraintViolationException.class })

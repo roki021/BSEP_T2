@@ -5,8 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigInteger;
+import java.util.Optional;
 
 @Repository
 public interface DigitalCertificateRepository extends JpaRepository<DigitalCertificate, Integer> {
-    DigitalCertificate findBySerialNumber(BigInteger serialNumber);
+    Optional<DigitalCertificate> findBySerialNumber(BigInteger serialNumber);
 }

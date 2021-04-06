@@ -11,6 +11,7 @@ public class DigitalCertificateDTO {
     private Timestamp startDate;
     private Timestamp endDate;
     private String commonName;
+    private boolean revoked;
 
     public DigitalCertificateDTO(DigitalCertificate digitalCertificate) {
         if(digitalCertificate != null) {
@@ -21,11 +22,12 @@ public class DigitalCertificateDTO {
         }
     }
 
-    public DigitalCertificateDTO(BigInteger serialNumber, Timestamp startDate, Timestamp endDate, String commonName) {
+    public DigitalCertificateDTO(BigInteger serialNumber, Timestamp startDate, Timestamp endDate, String commonName, boolean revoked) {
         this.serialNumber = serialNumber;
         this.startDate = startDate;
         this.endDate = endDate;
         this.commonName = commonName;
+        this.revoked = revoked;
     }
 
     public DigitalCertificateDTO() {
@@ -62,5 +64,13 @@ public class DigitalCertificateDTO {
 
     public void setCommonName(String commonName) {
         this.commonName = commonName;
+    }
+
+    public boolean isRevoked() {
+        return revoked;
+    }
+
+    public void setRevoked(boolean revoked) {
+        this.revoked = revoked;
     }
 }

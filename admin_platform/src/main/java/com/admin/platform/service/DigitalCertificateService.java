@@ -33,4 +33,8 @@ public interface DigitalCertificateService {
     X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, TemplateTypes templateTypes);
 
     void writeCertificateToFile(KeyStore keyStore, String certName, String alias, String saveDirectory) throws Exception;
+
+    void revokeCertificate(Long serialNumber) throws Exception;
+
+    boolean isRevoked(Long serialNumber);
 }
