@@ -6,9 +6,12 @@ import com.admin.platform.model.DigitalCertificate;
 import com.admin.platform.model.IssuerData;
 import com.admin.platform.model.SubjectData;
 import com.admin.platform.service.DigitalCertificateService;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +22,9 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.sql.Timestamp;
 
 @Configuration
 public class PlatfromKeyStore {
@@ -38,30 +43,42 @@ public class PlatfromKeyStore {
 
     @Bean(name = "setUpPKI")
     public KeyStore setUpPKI() {
-       try {
-           KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
-           File f = new File(KEYSTORE_FILE_PATH);
-           if (f.exists()){
-               keyStore.load(new FileInputStream(f), KEYSTORE_PASSWORD.toCharArray());
-           }else {
-               keyStore.load(null, KEYSTORE_PASSWORD.toCharArray());
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
+            File f = new File(KEYSTORE_FILE_PATH);
+            if (f.exists()){
+                keyStore.load(new FileInputStream(f), KEYSTORE_PASSWORD.toCharArray());
+                X509Certificate cert = readRootCert();
+                if(cert != null) {
+                    X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
+                    RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+                    digitalCertificateService.save(new DigitalCertificate(
+                            cert.getSerialNumber(),
+                            new Timestamp(cert.getNotBefore().getTime()),
+                            new Timestamp(cert.getNotAfter().getTime()),
+                            IETFUtils.valueToString(cn.getFirst().getValue()),
+                            cert.getSerialNumber().toString()
+                    ));
+                }
+            } else {
+                keyStore.load(null, KEYSTORE_PASSWORD.toCharArray());
 
-               DigitalCertificate root_cert = generateRoot(keyStore);
-               digitalCertificateService.writeCertificateToFile(keyStore,
+                DigitalCertificate root_cert = generateRoot(keyStore);
+                digitalCertificateService.writeCertificateToFile(keyStore,
                        TemplateTypes.ROOT.toString().toLowerCase(),
                        CryptConstants.ROOT_ALIAS, certDirectory);
 
                 digitalCertificateService.save(root_cert);
 
-               keyStore.store(new FileOutputStream(KEYSTORE_FILE_PATH), KEYSTORE_PASSWORD.toCharArray());
-           }
-           return keyStore;
-       } catch (IOException | CertificateException | NoSuchAlgorithmException |
+                keyStore.store(new FileOutputStream(KEYSTORE_FILE_PATH), KEYSTORE_PASSWORD.toCharArray());
+            }
+            return keyStore;
+        } catch (IOException | CertificateException | NoSuchAlgorithmException |
                NoSuchProviderException | KeyStoreException e) {
-           e.printStackTrace();
-       } catch (Exception e) {
-           e.printStackTrace();
-       }
+            e.printStackTrace();
+        }   catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return null;
     }
@@ -100,7 +117,7 @@ public class PlatfromKeyStore {
         digitalCertificate.setStartDate(new java.sql.Timestamp(subjectData.getStartDate().getTime()));
         digitalCertificate.setEndDate(new java.sql.Timestamp(subjectData.getEndDate().getTime()));
         digitalCertificate.setCommonName(TemplateTypes.ROOT.toString());
-        digitalCertificate.setCertKeyStorePath(certDirectory + "/root.crt");
+        digitalCertificate.setAlias(certDirectory + "/root.crt");
 
         return digitalCertificate;
     }
@@ -113,5 +130,24 @@ public class PlatfromKeyStore {
         builder.addRDN(BCStyle.L, "Novi Sad");
         builder.addRDN(BCStyle.C, "RS");
         return builder;
+    }
+
+    private X509Certificate readRootCert() {
+        try {
+            FileInputStream fis = new FileInputStream(certDirectory + "/root.crt");
+            BufferedInputStream bis = new BufferedInputStream(fis);
+
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+            // Reads certificate between
+            // -----BEGIN CERTIFICATE-----,
+            // and
+            // -----END CERTIFICATE-----.
+            return (X509Certificate)cf.generateCertificate(bis);
+        } catch (CertificateException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

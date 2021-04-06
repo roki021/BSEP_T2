@@ -35,7 +35,6 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
@@ -72,34 +71,35 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                 certificateSigningRequestService.getPublicKeyFromCSR(csrId),
                 subjectName.build(), TemplateTypes.LEAF_HOSPITAL, String.valueOf(csr.getId()));
 
-        String keyStorePath = "pki/keystore/keyStore_" + csr.getId() + ".jks";
-        char[] keyStorePass = csr.getId().toString().toCharArray();
-
         X509Certificate certificate = generateCertificate(subjectData, issuerData, TemplateTypes.LEAF_HOSPITAL);
         DigitalCertificate digitalCertificate = new DigitalCertificate(
                 new BigInteger(csr.getId().toString()));
         digitalCertificate.setStartDate(new java.sql.Timestamp(subjectData.getStartDate().getTime()));
         digitalCertificate.setEndDate(new java.sql.Timestamp(subjectData.getEndDate().getTime()));
         digitalCertificate.setCommonName(csr.getCommonName());
-        digitalCertificate.setCertKeyStorePath(keyStorePath);
+        digitalCertificate.setAlias(csr.getId().toString());
 
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
-            File f = new File(keyStorePath);
+            File f = new File(platfromKeyStore.getKEYSTORE_FILE_PATH());
             if (f.exists()){
-                keyStore.load(new FileInputStream(f), keyStorePass);
+                keyStore.load(new FileInputStream(f),
+                        platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
+
             }else {
-                keyStore.load(null, keyStorePass);
-
-                save(digitalCertificate);
-
-                keyStore.setKeyEntry(CryptConstants.ROOT_ALIAS, issuerKey,
-                        keyStorePass, new Certificate[]{certificate});
-
-                keyStore.store(new FileOutputStream(keyStorePath), keyStorePass);
-
-                return digitalCertificate;
+                keyStore.load(null, platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
             }
+
+            save(digitalCertificate);
+
+            keyStore.setKeyEntry(csr.getId().toString(), issuerKey,
+                    platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray(),
+                    new Certificate[]{certificate});
+
+            keyStore.store(new FileOutputStream(platfromKeyStore.getKEYSTORE_FILE_PATH()),
+                    platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
+
+            return digitalCertificate;
         } catch (IOException | CertificateException | NoSuchAlgorithmException |
                 NoSuchProviderException | KeyStoreException e) {
             e.printStackTrace();

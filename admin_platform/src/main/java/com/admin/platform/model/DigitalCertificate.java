@@ -21,7 +21,7 @@ public class DigitalCertificate  {
     private String commonName;
 
     @Column
-    private String certKeyStorePath;
+    private String alias;
 
     public DigitalCertificate() {
 
@@ -31,12 +31,12 @@ public class DigitalCertificate  {
         this.serialNumber = serialNumber;
     }
 
-    public DigitalCertificate(BigInteger serialNumber, Timestamp startDate, Timestamp endDate, String commonName, String certKeyStorePath) {
+    public DigitalCertificate(BigInteger serialNumber, Timestamp startDate, Timestamp endDate, String commonName, String alias) {
         this.serialNumber = serialNumber;
         this.startDate = startDate;
         this.endDate = endDate;
         this.commonName = commonName;
-        this.certKeyStorePath = certKeyStorePath;
+        this.alias = alias;
     }
 
     public BigInteger getSerialNumber() {
@@ -67,11 +67,11 @@ public class DigitalCertificate  {
         this.commonName = commonName;
     }
 
-    public String getCertKeyStorePath() {
-        return certKeyStorePath;
+    public String getAlias() {
+        return alias;
     }
 
-    public void setCertKeyStorePath(String certKeyStorePath) {
-        this.certKeyStorePath = certKeyStorePath;
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 }
