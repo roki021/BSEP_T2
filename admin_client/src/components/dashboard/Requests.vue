@@ -77,8 +77,8 @@
             <vs-option label="INTERMEDIATE" value="intermediate">
               INTERMEDIATE
             </vs-option>
-            <vs-option label="LEAF" value="leaf">
-              LEAF
+            <vs-option label="LEAF_HOSPITAL" value="LEAF_HOSPITAL">
+              LEAF_HOSPITAL
             </vs-option>
           </vs-select>
               </div>
@@ -105,7 +105,7 @@ export default {
     activeRequest: {},
     activeRequestIndex: 0,
     waitingResponse: false,
-    template: 'leaf'
+    template: 'LEAF_HOSPITAL'
   }),
   methods: {
     activate (index) {
