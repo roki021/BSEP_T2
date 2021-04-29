@@ -1,8 +1,13 @@
 package com.hospitalplatform.hospital_platform.service.imple;
 
+import com.hospitalplatform.hospital_platform.dto.CSRAutofillDataDTO;
 import com.hospitalplatform.hospital_platform.dto.CertificateSigningRequestDTO;
+import com.hospitalplatform.hospital_platform.dto.HospitalConfigurationDTO;
 import com.hospitalplatform.hospital_platform.exception.impl.InvalidAPIResponse;
+import com.hospitalplatform.hospital_platform.models.HospitalUser;
 import com.hospitalplatform.hospital_platform.service.CertificateSigningRequestService;
+import com.hospitalplatform.hospital_platform.service.HospitalService;
+import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.operator.ContentSigner;
@@ -11,6 +16,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -32,6 +38,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class CertificateSigningRequestServiceImpl implements CertificateSigningRequestService {
+    @Autowired
+    private HospitalUserService hospitalUserService;
+
+    @Autowired
+    private HospitalService hospitalService;
+
     @Value("${admin_platform.csr_request_url}")
     private String requestUrl;
 
@@ -84,6 +96,20 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         } catch (HttpClientErrorException exception) {
             throw new InvalidAPIResponse("Invalid API response.");
         }
+    }
+
+    @Override
+    public CSRAutofillDataDTO getAutofillData(Principal principal) {
+        HospitalConfigurationDTO configurationDTO = hospitalService.getConfiguration();
+        HospitalUser user = this.hospitalUserService.getUser(principal.getName());
+        return new CSRAutofillDataDTO(
+                user.getLastName(),
+                user.getFirstName(),
+                user.getEmail(),
+                configurationDTO.getOrganization(),
+                configurationDTO.getOrganizationUnit(),
+                configurationDTO.getCountry()
+        );
     }
 
     private void setRDN(X500NameBuilder builder, ASN1ObjectIdentifier field, String value) {

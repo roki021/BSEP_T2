@@ -1,0 +1,2 @@
+INSERT INTO hospital_admin (id, username, firstName, lastName, email, password)
+VALUES (1, 'admin', 'Jovan', 'Gruncic', 'zdravko.dugi@hospital-a.com', '$2a$10$6moWUCUWTb0hzylJa2FVNOz8bxPmb/MvSjvITimnkeB9fm/aR6xi6');

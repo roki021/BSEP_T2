@@ -33,6 +33,9 @@ public class CertificateSigningRequest {
     @Column
     private String uniqueIdentifier;
 
+    @Column
+    private boolean active;
+
     @Lob
     @Column(columnDefinition = "BLOB")
     private byte[] fullCertificate;
@@ -47,6 +50,7 @@ public class CertificateSigningRequest {
         this.email = email;
         this.uniqueIdentifier = uniqueIdentifier;
         this.fullCertificate = fullCertificate;
+        this.active = false;
     }
 
     public CertificateSigningRequest() {
@@ -127,4 +131,8 @@ public class CertificateSigningRequest {
     public void setUniqueIdentifier(String uniqueIdentifier) {
         this.uniqueIdentifier = uniqueIdentifier;
     }
+
+    public boolean isActive() { return this.active; }
+
+    public void activate() { this.active = true; }
 }

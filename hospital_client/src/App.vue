@@ -5,11 +5,26 @@
 </template>
 
 <script>
+import axios from 'axios'
 
 export default {
   name: 'App',
   created() {
     document.title = 'Hospital Platform'
+
+    var token = localStorage.getItem('user-token')
+    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+
+    axios.interceptors.response.use(undefined, function (err) {
+      return new Promise(function () {
+        if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
+        // if you ever get an unauthorized, logout the user
+          this.$store.dispatch('requestLogout')
+        // you can also redirect to /login if needed !
+        }
+        throw err
+      })
+    })
   }
 }
 </script>

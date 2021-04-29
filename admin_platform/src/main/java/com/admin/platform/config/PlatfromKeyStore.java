@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -25,6 +27,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.sql.Timestamp;
+import java.util.Properties;
 
 @Configuration
 public class PlatfromKeyStore {
@@ -149,5 +152,22 @@ public class PlatfromKeyStore {
         }
 
         return null;
+    }
+
+    public JavaMailSender getJavaMailSender() {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("localhost");
+        mailSender.setPort(1025);
+
+        //mailSender.setUsername("my.gmail@gmail.com");
+        //mailSender.setPassword("password");
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        //props.put("mail.smtp.auth", "true");
+        //props.put("mail.smtp.starttls.enable", "true");
+        //props.put("mail.debug", "true");
+
+        return mailSender;
     }
 }

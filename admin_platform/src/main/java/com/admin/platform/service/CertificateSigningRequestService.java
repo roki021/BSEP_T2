@@ -17,4 +17,6 @@ public interface CertificateSigningRequestService {
     CertificateSigningRequest findById(Long id);
 
     PublicKey getPublicKeyFromCSR(Long id);
+
+    void confirmCertificateSigningRequest(Long id);
 }

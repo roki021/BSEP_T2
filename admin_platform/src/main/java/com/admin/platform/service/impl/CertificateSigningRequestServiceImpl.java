@@ -1,5 +1,6 @@
 package com.admin.platform.service.impl;
 
+import com.admin.platform.event.OnCSREvent;
 import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.CertificateSigningRequest;
 import com.admin.platform.repository.CertificateSigningRequestRepository;
@@ -18,6 +19,7 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -31,6 +33,8 @@ import java.util.List;
 
 @Service
 public class CertificateSigningRequestServiceImpl implements CertificateSigningRequestService {
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Autowired
     private CertificateSigningRequestRepository certificateSigningRequestRepository;
@@ -49,7 +53,7 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         String email = getCRSX509NameField(x500Name, BCStyle.E);
         String serialNumber = getCRSX509NameField(x500Name, BCStyle.SERIALNUMBER);
 
-        certificateSigningRequestRepository.save(
+        CertificateSigningRequest req = certificateSigningRequestRepository.save(
                 new CertificateSigningRequest(
                         commonName,
                         surname,
@@ -60,17 +64,17 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
                         email,
                         serialNumber,
                         request));
-
+        eventPublisher.publishEvent(new OnCSREvent(req));
     }
 
     @Override
     public List<CertificateSigningRequest> getAll() {
-        return certificateSigningRequestRepository.findAll();
+        return certificateSigningRequestRepository.findByActive(true);
     }
 
     @Override
     public CertificateSigningRequest findById(Long id) {
-        return certificateSigningRequestRepository.findById(id);
+        return certificateSigningRequestRepository.findById(id).get();
     }
 
     @Override
@@ -86,6 +90,13 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         }
 
         return null;
+    }
+
+    @Override
+    public void confirmCertificateSigningRequest(Long id) {
+        CertificateSigningRequest csr = certificateSigningRequestRepository.getOne(id);
+        csr.activate();
+        certificateSigningRequestRepository.save(csr);
     }
 
     private PKCS10CertificationRequest extractCertificationRequest(byte[] rawRequest) throws IOException {

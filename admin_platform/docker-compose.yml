@@ -1,0 +1,15 @@
+version: '2'
+services:
+  product-server:
+    build: .
+    ports:
+      - 8080:8080
+  hospital-server:
+    build: ../hospital_platform
+    ports:
+      - 8081:8081
+  mail-server:
+    image: 'schickling/mailcatcher'
+    ports:
+    - 1025:1025
+    - 1080:1080

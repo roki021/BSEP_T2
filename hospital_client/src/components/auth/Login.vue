@@ -4,9 +4,12 @@
       <vs-col offset="2" w="8">
         <div class="content-inputs login-box">
           <div class="form-input">
-            <vs-input v-model="username" placeholder="User name">
+            <vs-input v-model="username" minlength="10" placeholder="User name">
               <template #icon>
                 <i class="bx bx-user"></i>
+              </template>
+              <template v-if="invalidUsername" #message-danger>
+                Username Invalid
               </template>
             </vs-input>
           </div>
@@ -15,10 +18,13 @@
               <template #icon>
                 <i class="bx bx-lock-open-alt"></i>
               </template>
+              <template v-if="invalidPassword" #message-danger>
+                Password Invalid
+              </template>
             </vs-input>
           </div>
           <div class="form-input">
-                <vs-button style="width: 100%">
+                <vs-button v-on:click="login()" style="width: 100%">
                   Login
                 </vs-button>
           </div>
@@ -31,9 +37,35 @@
 <script>
 export default {
   data: () => ({
-    username: "",
-    password: "",
+    username: '',
+    password: '',
+    invalidUsername: false,
+    invalidPassword: false
   }),
+  methods: {
+    login() {
+      if (this.username.length == 0) {
+        this.invalidUsername = true
+        return
+      }
+
+      if (this.password.length == 0) {
+        this.invalidPassword = true
+        return
+      }
+
+      /*this.$store.commit('login', {
+        username: this.username,
+        password: this.password
+      })*/
+      this.$store.dispatch('requestAuth', {
+        username: this.username,
+        password: this.password
+      }).then(() => {
+        this.$router.push('/')
+      })
+    }
+  }
 };
 </script>
 
@@ -54,5 +86,9 @@ input.vs-input {
 .login-container {
   width: 800px; 
   margin: 0 auto;
+}
+
+.vs-input__message {
+  margin-top: 5px;
 }
 </style>
