@@ -19,6 +19,7 @@ import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
@@ -32,6 +33,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.sql.Timestamp;
@@ -254,6 +256,15 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                 findBySerialNumber(new BigInteger(serialNumber.toString())).isPresent();
     }
 
+    @Override
+    public X500Name getSubjectName(Long serialNumber) throws CertificateEncodingException {
+        DigitalCertificate dc = getBySerialNumber(new BigInteger(serialNumber.toString()));
+        X509Certificate cert = (X509Certificate)readCertificate(platfromKeyStore.getKEYSTORE_FILE_PATH(),
+                platfromKeyStore.getKEYSTORE_PASSWORD(), dc.getAlias());
+
+        return new JcaX509CertificateHolder(cert).getSubject();
+    }
+
 
     private Date generateDate(int periodInMonths) {
         Calendar calendarLater = Calendar.getInstance();
@@ -276,6 +287,22 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
             }
         } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException
                 | IOException | UnrecoverableKeyException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Certificate readCertificate(String keyStoreFile, String keyStorePass, String alias) {
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS", "SUN");
+            BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
+            ks.load(in, keyStorePass.toCharArray());
+
+            if (ks.isKeyEntry(alias)) {
+                return ks.getCertificateChain(alias)[0];
+            }
+        } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException
+                | IndexOutOfBoundsException | IOException e) {
             e.printStackTrace();
         }
         return null;

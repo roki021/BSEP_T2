@@ -11,6 +11,7 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -37,4 +38,6 @@ public interface DigitalCertificateService {
     void revokeCertificate(Long serialNumber) throws Exception;
 
     boolean isRevoked(Long serialNumber);
+
+    X500Name getSubjectName(Long serialNumber) throws CertificateEncodingException;
 }

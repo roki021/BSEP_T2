@@ -32,7 +32,7 @@
                   <i v-if="tr.revoked" style="font-size: 20px" class='bx bx-minus-circle' />
                 </vs-td>
                 <vs-td>
-                  <vs-button transparent @click="activate(tr.serialNumber)">Details</vs-button>
+                  <vs-button transparent @click="activate(tr.serialNumber, i)">Details</vs-button>
                 </vs-td>
               </vs-tr>
             </template>
@@ -47,13 +47,44 @@
 
       <div class="con-form">
         <div class="center grid">
-          
+          <vs-row v-if="selectedCertificate.serialNumber">
+            <vs-col w="6"><div class="wrapper"><b>Serial number</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.serialNumber }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="selectedCertificate.commonName">
+            <vs-col w="6"><div class="wrapper"><b>Common name</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.commonName }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="selectedCertificate.organizationName">
+            <vs-col w="6"><div class="wrapper"><b>Organization</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.organizationName }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="selectedCertificate.organizationUnit">
+            <vs-col w="6"><div class="wrapper"><b>Organization unit</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.organizationUnit }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="selectedCertificate.country">
+            <vs-col w="6"><div class="wrapper"><b>Country</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.country }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="selectedCertificate.email">
+            <vs-col w="6"><div class="wrapper"><b>Email</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.email }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="selectedCertificate.startFrom">
+            <vs-col w="6"><div class="wrapper"><b>Valid from</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ toDate(selectedCertificate.startFrom) }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="selectedCertificate.endTo">
+            <vs-col w="6"><div class="wrapper"><b>Valid until</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ toDate(selectedCertificate.endTo) }}</div></vs-col>
+          </vs-row>
         </div>
       </div>
 
       <template #footer>
         <div class="footer-dialog">
-          <vs-button block> Dugmetina </vs-button>
+          <vs-button :loading="waitingResponse" v-on:click="revokeCertificate(selectedCertificate.serialNumber)" block> Revoke certificate </vs-button>
         </div>
       </template>
     </vs-dialog>
@@ -65,11 +96,20 @@ import axios from 'axios'
 export default {
   data: () => ({
     certificates: [],
+    selectedCertificate: {},
+    selectedIndex: -1,
+    waitingResponse: false,
     active: false
   }),
   methods: {
-    activate(serialNumber) {
+    activate(serialNumber, selectedIndex) {
       console.log(serialNumber)
+      this.selectedIndex = selectedIndex;
+      axios
+        .get(`http://localhost:8080/api/digital-certificates/${serialNumber}`)
+        .then((response) => {
+          this.selectedCertificate = response.data;
+      });
       this.active = true
     },
     toDate(unixtime) {
@@ -92,6 +132,31 @@ export default {
       + month
       + '.' 
       + date.getFullYear()
+    },
+    revokeCertificate(serialNumber) {
+      this.waitingResponse = true;
+      axios
+        .post(`http://localhost:8080/api/digital-certificates/revoke/${serialNumber}`)
+        .then(() => {
+          this.waitingResponse = false;
+          console.log('sss');
+          this.certificates[this.selectedIndex].revoked = true;
+          this.$vs.notification({
+            color: 'success',
+            position: null,
+            title: 'Successfully revoked',
+            text: 'Certificate is revoked.'
+          })
+        })
+        .catch(() => {
+          this.waitingResponse = false
+          
+          this.$vs.notification({
+            color: 'danger',
+            title: 'Something went wrong',
+            text: 'Try it again in a few moments'
+          })
+        });
     }
   },
   mounted() {
@@ -104,6 +169,17 @@ export default {
 };
 </script>
 <style>
+* {
+  font-size: 13px !important;
+}
+
+.wrapper {
+  padding-top: 15px;
+}
+
+.wrapper-template-input, .footer-dialog {
+  padding-top: 30px;
+}
 
 .revoke-status {
   text-align: center;
