@@ -1,15 +1,13 @@
 package com.admin.platform.controller;
 
 import com.admin.platform.constants.TemplateTypes;
-import com.admin.platform.dto.CertificateInstanceDTO;
-import com.admin.platform.dto.CertificateSigningRequestDTO;
-import com.admin.platform.dto.DigitalCertificateDTO;
-import com.admin.platform.dto.JSONExceptionMessage;
+import com.admin.platform.dto.*;
 import com.admin.platform.exception.JSONException;
 import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.DigitalCertificate;
 import com.admin.platform.service.DigitalCertificateService;
 import com.admin.platform.service.impl.CertificateSigningRequestServiceImpl;
+import org.bouncycastle.asn1.cmc.RevokeRequest;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 
 @RestController
 @RequestMapping("/api")
@@ -92,6 +91,7 @@ public class PKIController {
             dto.setStartFrom(dc.getStartDate());
             dto.setEndTo(dc.getEndDate());
             dto.setSerialNumber(dc.getSerialNumber().longValue());
+            dto.setKeyUsage(digitalCertificateService.getCertKeyUsage(serialNumber));
             return new ResponseEntity<>(
                     dto, HttpStatus.OK);
         } catch (CertificateEncodingException e) {
@@ -100,10 +100,10 @@ public class PKIController {
         }
     }
 
-    @PostMapping("/digital-certificates/revoke/{serialNumber}")
-    public ResponseEntity<?> revokeCertificate(@PathVariable Long serialNumber) {
+    @PostMapping("/digital-certificates/revoke")
+    public ResponseEntity<?> revokeCertificate(@RequestBody RevokeRequestDTO request) {
         try {
-            digitalCertificateService.revokeCertificate(serialNumber);
+            digitalCertificateService.revokeCertificate(request);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

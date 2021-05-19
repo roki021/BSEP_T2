@@ -3,6 +3,7 @@ package com.admin.platform.service.impl;
 import com.admin.platform.config.PlatfromKeyStore;
 import com.admin.platform.constants.CryptConstants;
 import com.admin.platform.constants.TemplateTypes;
+import com.admin.platform.dto.RevokeRequestDTO;
 import com.admin.platform.model.*;
 import com.admin.platform.repository.DigitalCertificateRepository;
 import com.admin.platform.repository.RevokedCertificateRepository;
@@ -32,15 +33,10 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
+import java.security.cert.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class DigitalCertificateServiceImpl implements DigitalCertificateService {
@@ -237,16 +233,17 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     }
 
     @Override
-    public void revokeCertificate(Long serialNumber) throws Exception {
+    public void revokeCertificate(RevokeRequestDTO request) throws Exception {
         Optional<DigitalCertificate> cert = digitalCertificateRepository.
-                findBySerialNumber(new BigInteger(serialNumber.toString()));
+                findBySerialNumber(new BigInteger(request.getCertId().toString()));
         if (cert.isEmpty()) {
             throw new Exception("Certificate with this serial number does not exist in this context");
         }
 
         revokedCertificateRepository.save(new RevokedCertificate(
                 cert.get().getSerialNumber(),
-                new Timestamp(new Date().getTime())
+                new Timestamp(new Date().getTime()),
+                request.getReason()
         ));
     }
 
@@ -265,6 +262,34 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         return new JcaX509CertificateHolder(cert).getSubject();
     }
 
+    @Override
+    public List<String> getCertKeyUsage(Long serialNumber) {
+        DigitalCertificate dc = getBySerialNumber(new BigInteger(serialNumber.toString()));
+        X509Certificate cert = (X509Certificate)readCertificate(platfromKeyStore.getKEYSTORE_FILE_PATH(),
+                platfromKeyStore.getKEYSTORE_PASSWORD(), dc.getAlias());
+
+        boolean[] keyUsage = cert.getKeyUsage();
+
+        String[] keyUsageString = new String[] {
+                "Digital Signature",
+                "Non Repudiation",
+                "Key Encipherment",
+                "Data Encipherment",
+                "Key Agreement",
+                "Certificate Signing",
+                "CRL Signing",
+                "Encipher Only",
+                "Decipher Only"
+        };
+        ArrayList<String> list = new ArrayList<>();
+        for(int i = 0; i < keyUsage.length; i++) {
+            if(keyUsage[i]) {
+                list.add(keyUsageString[i]);
+            }
+        }
+
+        return list;
+    }
 
     private Date generateDate(int periodInMonths) {
         Calendar calendarLater = Calendar.getInstance();

@@ -8,6 +8,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 
 import java.util.Date;
+import java.util.List;
 
 public class CertificateInstanceDTO {
 
@@ -19,6 +20,7 @@ public class CertificateInstanceDTO {
     private Date startFrom;
     private Date endTo;
     private Long serialNumber;
+    private List<String> keyUsage;
 
     public CertificateInstanceDTO(X500Name x500Name) {
         try {
@@ -108,6 +110,14 @@ public class CertificateInstanceDTO {
 
     public void setSerialNumber(Long serialNumber) {
         this.serialNumber = serialNumber;
+    }
+
+    public List<String> getKeyUsage() {
+        return keyUsage;
+    }
+
+    public void setKeyUsage(List<String> keyUsage) {
+        this.keyUsage = keyUsage;
     }
 
     private String getX509NameField(X500Name x500Name, ASN1ObjectIdentifier field) throws UnexpectedSituation {

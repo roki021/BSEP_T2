@@ -23,16 +23,22 @@
                   {{ tr.commonName }}
                 </vs-td>
                 <vs-td>
-                  {{ toDate(tr.startDate) }} 
+                  {{ toDate(tr.startDate) }}
                 </vs-td>
                 <vs-td>
                   {{ toDate(tr.endDate) }}
                 </vs-td>
                 <vs-td class="revoke-status">
-                  <i v-if="tr.revoked" style="font-size: 20px" class='bx bx-minus-circle' />
+                  <i
+                    v-if="tr.revoked"
+                    style="font-size: 20px"
+                    class="bx bx-minus-circle"
+                  />
                 </vs-td>
                 <vs-td>
-                  <vs-button transparent @click="activate(tr.serialNumber, i)">Details</vs-button>
+                  <vs-button transparent @click="activate(tr.serialNumber, i)"
+                    >Details</vs-button
+                  >
                 </vs-td>
               </vs-tr>
             </template>
@@ -46,52 +52,135 @@
       </template>
 
       <div class="con-form">
-        <div class="center grid">
+        <div v-if="isHidden" class="center grid">
           <vs-row v-if="selectedCertificate.serialNumber">
-            <vs-col w="6"><div class="wrapper"><b>Serial number</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.serialNumber }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Serial number</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ selectedCertificate.serialNumber }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="selectedCertificate.commonName">
-            <vs-col w="6"><div class="wrapper"><b>Common name</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.commonName }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Common name</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ selectedCertificate.commonName }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="selectedCertificate.organizationName">
-            <vs-col w="6"><div class="wrapper"><b>Organization</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.organizationName }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Organization</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ selectedCertificate.organizationName }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="selectedCertificate.organizationUnit">
-            <vs-col w="6"><div class="wrapper"><b>Organization unit</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.organizationUnit }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Organization unit</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ selectedCertificate.organizationUnit }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="selectedCertificate.country">
-            <vs-col w="6"><div class="wrapper"><b>Country</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.country }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Country</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ selectedCertificate.country }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="selectedCertificate.email">
-            <vs-col w="6"><div class="wrapper"><b>Email</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ selectedCertificate.email }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Email</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ selectedCertificate.email }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="selectedCertificate.startFrom">
-            <vs-col w="6"><div class="wrapper"><b>Valid from</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ toDate(selectedCertificate.startFrom) }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Valid from</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ toDate(selectedCertificate.startFrom) }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="selectedCertificate.endTo">
-            <vs-col w="6"><div class="wrapper"><b>Valid until</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ toDate(selectedCertificate.endTo) }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Valid until</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ toDate(selectedCertificate.endTo) }}
+              </div></vs-col
+            >
+          </vs-row>
+          <vs-row v-if="selectedCertificate.keyUsage">
+            <vs-col w="6"
+              ><div class="wrapper"><b>Key usage</b></div></vs-col
+            >
+          </vs-row>
+          <vs-row v-if="selectedCertificate.keyUsage">
+            <vs-col w="6">
+              <div class="wrapper" style="pointer-events: none">
+                <template>
+                  <vs-checkbox
+                    v-for="usage in selectedCertificate.keyUsage"
+                    :key="usage"
+                    v-model="option"
+                  >
+                    {{ usage }}
+                  </vs-checkbox>
+                </template>
+              </div>
+            </vs-col>
+          </vs-row>
+        </div>
+        <div v-if="!isHidden" class="center grid">
+          <vs-row>
+            <vs-col w="10">
+              <div class="wrapper">
+                <b>Describe a reason for revocation</b>
+              </div>
+            </vs-col>
           </vs-row>
         </div>
       </div>
 
       <template #footer>
         <div class="footer-dialog">
-          <vs-button :loading="waitingResponse" v-on:click="revokeCertificate(selectedCertificate.serialNumber)" block> Revoke certificate </vs-button>
+          <vs-button
+            :loading="waitingResponse"
+            v-on:click="isHidden = !isHidden"
+            block
+          >
+            Revoke certificate
+          </vs-button>
         </div>
       </template>
     </vs-dialog>
   </div>
 </template>
 <script>
-import axios from 'axios'
+import axios from "axios";
 
 export default {
   data: () => ({
@@ -99,73 +188,72 @@ export default {
     selectedCertificate: {},
     selectedIndex: -1,
     waitingResponse: false,
-    active: false
+    active: false,
+    option: true,
+    isHidden: true,
   }),
   methods: {
     activate(serialNumber, selectedIndex) {
-      console.log(serialNumber)
+      console.log(serialNumber);
       this.selectedIndex = selectedIndex;
       axios
         .get(`http://localhost:8080/api/digital-certificates/${serialNumber}`)
         .then((response) => {
           this.selectedCertificate = response.data;
-      });
-      this.active = true
+        });
+      this.active = true;
     },
     toDate(unixtime) {
-      let date = new Date(unixtime)
-      let hour = date.getHours()
-      let min = date.getMinutes()
-      let day = date.getDay()
-      let month = date.getMonth()
+      let date = new Date(unixtime);
+      let hour = date.getHours();
+      let min = date.getMinutes();
+      let day = date.getDay();
+      let month = date.getMonth();
 
-      if (hour < 10) hour = '0' + hour
-      if (min < 10) min = '0' + min
-      if (day < 10) day = '0' + day
-      if (month < 10) month = '0' + month
+      if (hour < 10) hour = "0" + hour;
+      if (min < 10) min = "0" + min;
+      if (day < 10) day = "0" + day;
+      if (month < 10) month = "0" + month;
 
-      return hour + ':' 
-      + min
-      + ' ' 
-      + day 
-      + '.' 
-      + month
-      + '.' 
-      + date.getFullYear()
+      return (
+        hour + ":" + min + " " + day + "." + month + "." + date.getFullYear()
+      );
     },
     revokeCertificate(serialNumber) {
       this.waitingResponse = true;
       axios
-        .post(`http://localhost:8080/api/digital-certificates/revoke/${serialNumber}`)
+        .post(
+          `http://localhost:8080/api/digital-certificates/revoke/${serialNumber}`
+        )
         .then(() => {
           this.waitingResponse = false;
-          console.log('sss');
+          console.log("sss");
           this.certificates[this.selectedIndex].revoked = true;
           this.$vs.notification({
-            color: 'success',
+            color: "success",
             position: null,
-            title: 'Successfully revoked',
-            text: 'Certificate is revoked.'
-          })
+            title: "Successfully revoked",
+            text: "Certificate is revoked.",
+          });
         })
         .catch(() => {
-          this.waitingResponse = false
-          
+          this.waitingResponse = false;
+
           this.$vs.notification({
-            color: 'danger',
-            title: 'Something went wrong',
-            text: 'Try it again in a few moments'
-          })
+            color: "danger",
+            title: "Something went wrong",
+            text: "Try it again in a few moments",
+          });
         });
-    }
+    },
   },
   mounted() {
     axios
-      .get('http://localhost:8080/api/digital-certificates')
+      .get("http://localhost:8080/api/digital-certificates")
       .then((response) => {
         this.certificates = response.data;
-    });
-  }
+      });
+  },
 };
 </script>
 <style>
@@ -177,12 +265,12 @@ export default {
   padding-top: 15px;
 }
 
-.wrapper-template-input, .footer-dialog {
+.wrapper-template-input,
+.footer-dialog {
   padding-top: 30px;
 }
 
 .revoke-status {
   text-align: center;
 }
-
 </style>

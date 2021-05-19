@@ -1,6 +1,7 @@
 package com.admin.platform.service;
 
 import com.admin.platform.constants.TemplateTypes;
+import com.admin.platform.dto.RevokeRequestDTO;
 import com.admin.platform.model.DigitalCertificate;
 import com.admin.platform.model.IssuerData;
 import com.admin.platform.model.SubjectData;
@@ -12,6 +13,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -35,9 +37,11 @@ public interface DigitalCertificateService {
 
     void writeCertificateToFile(KeyStore keyStore, String certName, String alias, String saveDirectory) throws Exception;
 
-    void revokeCertificate(Long serialNumber) throws Exception;
+    void revokeCertificate(RevokeRequestDTO request) throws Exception;
 
     boolean isRevoked(Long serialNumber);
 
     X500Name getSubjectName(Long serialNumber) throws CertificateEncodingException;
+
+    List<String> getCertKeyUsage(Long serialNumber);
 }

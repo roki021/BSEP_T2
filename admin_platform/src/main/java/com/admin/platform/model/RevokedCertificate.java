@@ -17,19 +17,24 @@ public class RevokedCertificate {
     @Column
     private Timestamp revokingDate;
 
+    @Column
+    private String revokeReason;
+
     public RevokedCertificate() {
     }
 
-    public RevokedCertificate(Long id, BigInteger serialNumber, Timestamp revokingDate) {
+    public RevokedCertificate(Long id, BigInteger serialNumber, Timestamp revokingDate, String revokeReason) {
         this.id = id;
         this.serialNumber = serialNumber;
         this.revokingDate = revokingDate;
+        this.revokeReason = revokeReason;
     }
 
-    public RevokedCertificate(BigInteger serialNumber, Timestamp revokingDate) {
+    public RevokedCertificate(BigInteger serialNumber, Timestamp revokingDate, String revokeReason) {
         this.id = id;
         this.serialNumber = serialNumber;
         this.revokingDate = revokingDate;
+        this.revokeReason = revokeReason;
     }
 
     public Long getId() {
@@ -50,5 +55,13 @@ public class RevokedCertificate {
 
     public void setRevokingDate(Timestamp revokingDate) {
         this.revokingDate = revokingDate;
+    }
+
+    public String getRevokeReason() {
+        return revokeReason;
+    }
+
+    public void setRevokeReason(String revokeReason) {
+        this.revokeReason = revokeReason;
     }
 }
