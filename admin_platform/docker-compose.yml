@@ -2,12 +2,25 @@ version: '2'
 services:
   product-server:
     build: .
+  nginx-product:
+    build: nginx
+    volumes:
+      - ./pki/certificates:/etc/ssl/certs/
     ports:
-      - 8080:8080
+      - 8080:443
+    depends_on:
+      - product-server
+  # move to hospital_platform?
   hospital-server:
     build: ../hospital_platform
+  nginx-hospital:
+    build: ../hospital_platform/nginx
+    volumes:
+      - ../hospital_platform/ssl:/etc/ssl/certs/
     ports:
-      - 8081:8081
+      - 8081:443
+    depends_on:
+      - hospital-server
   mail-server:
     image: 'schickling/mailcatcher'
     ports:

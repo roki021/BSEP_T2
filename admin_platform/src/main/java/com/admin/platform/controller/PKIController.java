@@ -9,12 +9,15 @@ import com.admin.platform.model.DigitalCertificate;
 import com.admin.platform.model.RevokedCertificate;
 import com.admin.platform.service.DigitalCertificateService;
 import com.admin.platform.service.impl.CertificateSigningRequestServiceImpl;
+import org.apache.coyote.Response;
 import org.bouncycastle.asn1.cmc.RevokeRequest;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.math.BigInteger;

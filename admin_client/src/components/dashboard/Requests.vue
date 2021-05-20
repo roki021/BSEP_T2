@@ -117,7 +117,7 @@ export default {
       this.waitingResponse = true;
 
       axios
-      .post(`http://localhost:8080/api/issue-certificate/${this.activeRequest.id}/${this.template}`)
+      .post(`${process.env.VUE_APP_ADMIN_API}/issue-certificate/${this.activeRequest.id}/${this.template}`)
       .then(() => {
         this.waitingResponse = false;
         this.active = false;
@@ -136,7 +136,7 @@ export default {
   },
   mounted() {
     axios
-      .get('http://localhost:8080/api/certificate-signing-requests')
+      .get(`${process.env.VUE_APP_ADMIN_API}/certificate-signing-requests`)
       .then((response) => {
         this.requests = response.data;
       });

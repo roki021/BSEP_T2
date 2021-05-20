@@ -61,7 +61,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                 platfromKeyStore.getKEYSTORE_PASSWORD(), CryptConstants.ROOT_ALIAS,
                 platfromKeyStore.getKEYSTORE_PASSWORD());
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-        builder.addRDN(BCStyle.CN, "ROOT");
+        builder.addRDN(BCStyle.CN, "localhost"); //TODO: take care
         builder.addRDN(BCStyle.O, "MZ-Srbija");
         builder.addRDN(BCStyle.OU, "Klinicki centar");
         builder.addRDN(BCStyle.L, "Novi Sad");

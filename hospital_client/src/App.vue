@@ -15,12 +15,15 @@ export default {
     var token = localStorage.getItem('user-token')
     axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
 
-    axios.interceptors.response.use(undefined, function (err) {
+    axios.interceptors.response.use(undefined, (err) => {
+      let store = this.$store
+      let router = this.$router
+
       return new Promise(function () {
-        if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
-        // if you ever get an unauthorized, logout the user
-          this.$store.dispatch('requestLogout')
-        // you can also redirect to /login if needed !
+        if (err.response.status == 401) {
+          store.dispatch('requestLogout').then(() => {
+            router.push({path: 'login'})
+          })
         }
         throw err
       })

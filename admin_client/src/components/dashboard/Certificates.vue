@@ -236,7 +236,7 @@ export default {
       console.log(serialNumber);
       this.selectedIndex = selectedIndex;
       axios
-        .get(`http://localhost:8080/api/digital-certificates/${serialNumber}`)
+        .get(`${process.env.VUE_APP_ADMIN_API}/digital-certificates/${serialNumber}`)
         .then((response) => {
           this.selectedCertificate = response.data;
           this.revokeRequset.certId = this.selectedCertificate.serialNumber;
@@ -267,7 +267,7 @@ export default {
       this.waitingResponse = true;
       axios
         .post(
-          `http://localhost:8080/api/digital-certificates/revoke`,
+          `${process.env.VUE_APP_ADMIN_API}/digital-certificates/revoke`,
           this.revokeRequset
         )
         .then(() => {
@@ -294,7 +294,7 @@ export default {
   },
   mounted() {
     axios
-      .get("http://localhost:8080/api/digital-certificates")
+      .get(`${process.env.VUE_APP_ADMIN_API}/digital-certificates`)
       .then((response) => {
         this.certificates = response.data;
       });

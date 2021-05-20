@@ -101,7 +101,7 @@ public class PlatfromKeyStore {
     private DigitalCertificate generateRoot(KeyStore keyStore) throws KeyStoreException {
         KeyPair kp = digitalCertificateService.generateKeyPair();
 
-        X500NameBuilder builder = generateName("ROOT");
+        X500NameBuilder builder = generateName("localhost");
 
         IssuerData issuerData =
                 digitalCertificateService.generateIssuerData(kp.getPrivate(), builder.build());
