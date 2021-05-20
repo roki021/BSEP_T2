@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.bind.DatatypeConverter;
@@ -35,6 +36,7 @@ public class PKIController {
     private DigitalCertificateService digitalCertificateService;
 
     @GetMapping("/certificate-signing-requests")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> getCertificateSigningRequests() {
         return new ResponseEntity<>(
                 csrService.getAll().stream().filter(CertificateSigningRequest::isActive).map(CertificateSigningRequestDTO::new), HttpStatus.OK);
@@ -56,6 +58,7 @@ public class PKIController {
     }
 
     @PostMapping("/issue-certificate/{csrId}/{templateName}")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> issueCertificate(@PathVariable Long csrId, @PathVariable String templateName) {
         try {
             csrService.logicRemove(csrId);
@@ -76,6 +79,7 @@ public class PKIController {
     }
 
     @GetMapping("/digital-certificates")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> getDigitalCertificates() {
         return new ResponseEntity<>(
                 digitalCertificateService.getAll().stream().map(cert -> {
@@ -88,12 +92,14 @@ public class PKIController {
     }
 
     @GetMapping("/digital-certificates/validity/{serialNumber}")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> checkValidity(@PathVariable Long serialNumber) {
         return new ResponseEntity<>(
                 digitalCertificateService.getIfIsRevoked(serialNumber) != null, HttpStatus.OK);
     }
 
     @GetMapping("/digital-certificates/{serialNumber}")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> getCertificate(@PathVariable Long serialNumber) {
         DigitalCertificate dc = digitalCertificateService.
                 getBySerialNumber(new BigInteger(serialNumber.toString()));
@@ -117,6 +123,7 @@ public class PKIController {
     }
 
     @PostMapping("/digital-certificates/revoke")
+   // @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> revokeCertificate(@RequestBody RevokeRequestDTO request) {
         try {
             digitalCertificateService.revokeCertificate(request);

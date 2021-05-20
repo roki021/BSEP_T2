@@ -22,6 +22,7 @@ public class CertificateSigningRequestController {
     private CertificateSigningRequestService certificateSigningRequestService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> sendCertificateSigningRequest(@RequestBody CertificateSigningRequestDTO csr)
             throws OperatorCreationException, IOException, InvalidAPIResponse {
         certificateSigningRequestService.sendRequest(csr);

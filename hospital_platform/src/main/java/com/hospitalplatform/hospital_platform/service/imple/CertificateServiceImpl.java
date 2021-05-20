@@ -16,5 +16,6 @@ public class CertificateServiceImpl implements CertificateService {
     public void installCertificate(String certificate_string) throws IOException {
         FileWriter writer = new FileWriter(certificatePath);
         writer.write(certificate_string);
+        writer.close();
     }
 }

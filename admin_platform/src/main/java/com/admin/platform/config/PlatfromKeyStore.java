@@ -11,6 +11,8 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,8 +114,13 @@ public class PlatfromKeyStore {
 
         IssuerData issuerData =
                 digitalCertificateService.generateIssuerData(kp.getPrivate(), builder.build());
+
+        GeneralName[] subjectAltNames = new GeneralName[]{
+                new GeneralName(GeneralName.dNSName, "localhost")
+        };
+
         SubjectData subjectData = digitalCertificateService.generateSubjectData
-                (kp.getPublic(), builder.build(), TemplateTypes.ROOT, CryptConstants.ROOT_ALIAS);
+                (kp.getPublic(), builder.build(), TemplateTypes.ROOT, new GeneralNames(subjectAltNames), CryptConstants.ROOT_ALIAS);
 
         subjectData.setSerialNumber(CryptConstants.ROOT_ALIAS);
         X509Certificate certificate = digitalCertificateService.generateCertificate

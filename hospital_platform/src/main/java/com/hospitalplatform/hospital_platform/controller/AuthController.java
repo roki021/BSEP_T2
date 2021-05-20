@@ -24,20 +24,9 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @Autowired
-    private CertificateService certificateService;
-
     @PostMapping("/login")
     public ResponseEntity<UserTokenStateDTO> login(@RequestBody @Validated LoginDTO loginDTO, HttpServletResponse response) {
         UserTokenStateDTO token = authService.loginUser(loginDTO);
         return ResponseEntity.ok(token);
-    }
-    @PostMapping("/certificate")
-    public ResponseEntity<String> receiveCertificate(@RequestBody byte[] request) throws IOException {
-        System.out.println("DOSAO SERTIFIKAT");
-        //System.out.println(new String(request));
-        certificateService.installCertificate(new String(request));
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

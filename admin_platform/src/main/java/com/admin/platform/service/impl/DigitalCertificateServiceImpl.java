@@ -12,10 +12,8 @@ import com.admin.platform.service.DigitalCertificateService;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -28,16 +26,22 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
@@ -59,6 +63,9 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     @Autowired
     private PlatfromKeyStore platfromKeyStore;
 
+    @Autowired
+    private JavaMailSender mailSender;
+
     @Override
     public DigitalCertificate createCertificate(Long csrId, TemplateTypes templateType) {
         CertificateSigningRequest csr = certificateSigningRequestService.findById(csrId);
@@ -73,20 +80,26 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         builder.addRDN(BCStyle.L, "Novi Sad");
         builder.addRDN(BCStyle.C, "RS");
         IssuerData issuerData = generateIssuerData(issuerKey, builder.build());
-        X500NameBuilder subjectName = generateName(csr);
-        SubjectData subjectData = generateSubjectData(
-                certificateSigningRequestService.getPublicKeyFromCSR(csrId),
-                subjectName.build(), TemplateTypes.LEAF_HOSPITAL, String.valueOf(csr.getId()));
-
-        X509Certificate certificate = generateCertificate(subjectData, issuerData, TemplateTypes.LEAF_HOSPITAL);
-        DigitalCertificate digitalCertificate = new DigitalCertificate(
-                new BigInteger(csr.getId().toString()));
-        digitalCertificate.setStartDate(new java.sql.Timestamp(subjectData.getStartDate().getTime()));
-        digitalCertificate.setEndDate(new java.sql.Timestamp(subjectData.getEndDate().getTime()));
-        digitalCertificate.setCommonName(csr.getCommonName());
-        digitalCertificate.setAlias(csr.getId().toString());
 
         try {
+            X500NameBuilder subjectName = generateName(csr);
+            GeneralNames generalNames = certificateSigningRequestService.getGeneralNamesFromCSR(csrId);
+            if (generalNames == null) {
+                throw new CertificateException("No GeneralNames provided");
+            }
+
+            SubjectData subjectData = generateSubjectData(
+                    certificateSigningRequestService.getPublicKeyFromCSR(csrId),
+                    subjectName.build(), TemplateTypes.LEAF_HOSPITAL, generalNames, String.valueOf(csr.getId()));
+
+            X509Certificate certificate = generateCertificate(subjectData, issuerData, TemplateTypes.LEAF_HOSPITAL);
+            DigitalCertificate digitalCertificate = new DigitalCertificate(
+                    new BigInteger(csr.getId().toString()));
+            digitalCertificate.setStartDate(new java.sql.Timestamp(subjectData.getStartDate().getTime()));
+            digitalCertificate.setEndDate(new java.sql.Timestamp(subjectData.getEndDate().getTime()));
+            digitalCertificate.setCommonName(csr.getCommonName());
+            digitalCertificate.setAlias(csr.getId().toString());
+
             KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
             File f = new File(platfromKeyStore.getKEYSTORE_FILE_PATH());
             if (f.exists()){
@@ -155,7 +168,8 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
     @Override
     public SubjectData generateSubjectData(PublicKey publicKey, X500Name name,
-                                           TemplateTypes templateType, String serialNum) {
+                                           TemplateTypes templateType, GeneralNames generalNames,
+                                           String serialNum) {
         Date endDate;
 
         if (templateType == TemplateTypes.ROOT) {
@@ -167,6 +181,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         return new SubjectData(
                 publicKey,
                 name,
+                generalNames,
                 serialNum,
                 new Date(),
                 endDate
@@ -189,6 +204,9 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                     subjectData.getEndDate(),
                     subjectData.getX500name(),
                     subjectData.getPublicKey());
+
+            certGen.addExtension(Extension.subjectAlternativeName, true,
+                    subjectData.getGeneralNames());
 
             if(templateTypes == TemplateTypes.ROOT) {
                 certGen.addExtension(Extension.keyUsage, false,
@@ -313,12 +331,21 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
         HttpEntity<String> request = new HttpEntity<>(stringBuilder.toString());
 
-        commonName = commonName.contains("http://") ? commonName : "http://" + commonName;
+        commonName = commonName.contains("https://") ? commonName : "https://" + commonName;
         String requestUrl = commonName.indexOf("/") == commonName.length() - 1 ?
                 commonName.substring(0, commonName.length() - 1) + apiEndpoint : commonName + apiEndpoint;
 
         System.out.println(stringBuilder);
-        restTemplate.postForLocation(requestUrl, request);
+        //restTemplate.postForLocation(requestUrl, request);
+        MimeMessage message = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo("boban_rajovic@gmail.com");
+            helper.addAttachment("Certificate.crt", new ByteArrayResource(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)));
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
     }
 
     private Date generateDate(int periodInMonths) {

@@ -7,6 +7,7 @@ import com.admin.platform.model.IssuerData;
 import com.admin.platform.model.RevokedCertificate;
 import com.admin.platform.model.SubjectData;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.GeneralNames;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -32,7 +33,7 @@ public interface DigitalCertificateService {
 
     IssuerData generateIssuerData(PrivateKey issuerKey, X500Name name);
 
-    SubjectData generateSubjectData(PublicKey publicKey, X500Name name, TemplateTypes templateType, String serialNum);
+    SubjectData generateSubjectData(PublicKey publicKey, X500Name name, TemplateTypes templateType, GeneralNames generalNames, String serialNum);
 
     X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, TemplateTypes templateTypes);
 
