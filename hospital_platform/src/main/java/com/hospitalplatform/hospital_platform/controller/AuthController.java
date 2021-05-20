@@ -5,6 +5,7 @@ import com.hospitalplatform.hospital_platform.dto.UserTokenStateDTO;
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
 import com.hospitalplatform.hospital_platform.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,4 +31,10 @@ public class AuthController {
         return ResponseEntity.ok(token);
     }
 
+    @PostMapping("/certificate")
+    public ResponseEntity<String> receiveCertificate(@RequestBody byte[] request) {
+        System.out.println(new String(request));
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
