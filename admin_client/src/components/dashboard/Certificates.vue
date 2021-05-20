@@ -46,7 +46,7 @@
         </div>
       </vs-col>
     </vs-row>
-    <vs-dialog v-model="active">
+    <vs-dialog v-model="active" @close="handleClose">
       <template #header>
         <h4 class="not-margin">Certificate</h4>
       </template>
@@ -158,7 +158,20 @@
           <vs-row>
             <vs-col w="10">
               <div class="wrapper">
-                <b>Describe a reason for revocation</b>
+                <b>Revocation reason</b>
+              </div>
+            </vs-col>
+          </vs-row>
+          <vs-row>
+            <vs-col w="10">
+              <div class="wrapper">
+                <template v-if="selectedCertificate.revokeReason">
+                  <textarea id="revoke-desc" rows="20" cols="54" v-model="selectedCertificate.revokeReason"
+                    :disabled="selectedCertificate.revokeReason"></textarea>
+                </template>
+                <template v-else>
+                  <textarea id="revoke-desc" rows="20" cols="54" v-model="revokeRequset.reason"></textarea>
+                </template>
               </div>
             </vs-col>
           </vs-row>
@@ -168,11 +181,33 @@
       <template #footer>
         <div class="footer-dialog">
           <vs-button
-            :loading="waitingResponse"
+            v-if="!selectedCertificate.revokeReason && isHidden"
             v-on:click="isHidden = !isHidden"
             block
           >
             Revoke certificate
+          </vs-button>
+          <vs-button
+            v-else-if="selectedCertificate.revokeReason && isHidden"
+            v-on:click="isHidden = !isHidden"
+            block
+          >
+            See revocation details
+          </vs-button>
+          <vs-button
+            v-else-if="selectedCertificate.revokeReason && !isHidden"
+            v-on:click="isHidden = !isHidden"
+            block
+          >
+            Back
+          </vs-button>
+          <vs-button
+            v-else
+            :loading="waitingResponse"
+            v-on:click="revokeCertificate()"
+            block
+          >
+            Revoke
           </vs-button>
         </div>
       </template>
@@ -191,6 +226,10 @@ export default {
     active: false,
     option: true,
     isHidden: true,
+    revokeRequset: {
+      reason: '',
+      certId: -1
+    }
   }),
   methods: {
     activate(serialNumber, selectedIndex) {
@@ -200,8 +239,13 @@ export default {
         .get(`http://localhost:8080/api/digital-certificates/${serialNumber}`)
         .then((response) => {
           this.selectedCertificate = response.data;
+          this.revokeRequset.certId = this.selectedCertificate.serialNumber;
         });
       this.active = true;
+    },
+    handleClose() {
+      this.active = false;
+      this.isHidden = true;
     },
     toDate(unixtime) {
       let date = new Date(unixtime);
@@ -219,11 +263,12 @@ export default {
         hour + ":" + min + " " + day + "." + month + "." + date.getFullYear()
       );
     },
-    revokeCertificate(serialNumber) {
+    revokeCertificate() {
       this.waitingResponse = true;
       axios
         .post(
-          `http://localhost:8080/api/digital-certificates/revoke/${serialNumber}`
+          `http://localhost:8080/api/digital-certificates/revoke`,
+          this.revokeRequset
         )
         .then(() => {
           this.waitingResponse = false;
@@ -272,5 +317,19 @@ export default {
 
 .revoke-status {
   text-align: center;
+}
+
+#revoke-desc {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  resize: none;
+  font-size: 12px;
+}
+
+#revoke-desc:focus {
+  outline: none;
+}
+
+#revoke-desc:disabled {
+  color:black;
 }
 </style>
