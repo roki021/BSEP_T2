@@ -29,6 +29,7 @@ import org.yaml.snakeyaml.util.ArrayUtils;
 import javax.security.auth.Subject;
 import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.DatatypeConverter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +47,9 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
 
     @Value("${admin_platform.csr_request_url}")
     private String requestUrl;
+
+    @Value("${hospital.key_path}")
+    private String keyPath;
 
     @Override
     public void sendRequest(CertificateSigningRequestDTO csrDTO) throws OperatorCreationException, IOException, InvalidAPIResponse {
@@ -75,7 +79,10 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         PKCS10CertificationRequest csr = p10Builder.build(signer);
 
         //TODO save private key
-        //System.out.println("Private key: " + Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded()));
+        /*FileWriter writer = new FileWriter(keyPath);
+        writer.write("-----BEGIN PRIVATE KEY-----\n");
+        writer.write(Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded()) + '\n');
+        writer.write("-----END PRIVATE KEY-----\n");*/
 
         StringBuilder builder = new StringBuilder();
 

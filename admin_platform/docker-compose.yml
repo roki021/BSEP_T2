@@ -13,6 +13,8 @@ services:
   # move to hospital_platform?
   hospital-server:
     build: ../hospital_platform
+    volumes:
+      - ../hospital_platform/ssl:/etc/ssl/certs/
   nginx-hospital:
     build: ../hospital_platform/nginx
     volumes:

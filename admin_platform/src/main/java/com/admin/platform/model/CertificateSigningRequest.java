@@ -50,7 +50,7 @@ public class CertificateSigningRequest {
         this.email = email;
         this.uniqueIdentifier = uniqueIdentifier;
         this.fullCertificate = fullCertificate;
-        this.active = true;
+        this.active = false;
     }
 
     public CertificateSigningRequest() {

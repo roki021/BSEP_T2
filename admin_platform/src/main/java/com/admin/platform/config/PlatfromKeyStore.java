@@ -44,6 +44,9 @@ public class PlatfromKeyStore {
     @Value("${platform.certifacates.directory}")
     private String certDirectory;
 
+    @Value("${hospital.certificate.endpoint}")
+    private String certEndpoint;
+
     @Bean(name = "setUpPKI")
     public KeyStore setUpPKI() {
         try {
@@ -96,6 +99,10 @@ public class PlatfromKeyStore {
 
     public String getCertDirectory() {
         return certDirectory;
+    }
+
+    public String getCertEndpoint() {
+        return certEndpoint;
     }
 
     private DigitalCertificate generateRoot(KeyStore keyStore) throws KeyStoreException {

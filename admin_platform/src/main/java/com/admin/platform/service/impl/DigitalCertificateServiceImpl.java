@@ -28,8 +28,14 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
@@ -100,9 +106,13 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
             keyStore.store(new FileOutputStream(platfromKeyStore.getKEYSTORE_FILE_PATH()),
                     platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
 
+            sendCertificate(certificate, digitalCertificate.getCommonName(), platfromKeyStore.getCertEndpoint());
+
             return digitalCertificate;
         } catch (IOException | CertificateException | NoSuchAlgorithmException |
                 NoSuchProviderException | KeyStoreException e) {
+            e.printStackTrace();
+        } catch (HttpClientErrorException e) {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
@@ -289,6 +299,26 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         }
 
         return list;
+    }
+
+    private void sendCertificate(X509Certificate certificate, String commonName, String apiEndpoint)
+            throws CertificateEncodingException, HttpClientErrorException {
+        RestTemplate restTemplate = new RestTemplate();
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("-----BEGIN CERTIFICATE-----\n");
+        stringBuilder.append(DatatypeConverter.printBase64Binary(certificate.getEncoded()));
+        stringBuilder.append("\n-----END CERTIFICATE-----");
+
+        HttpEntity<String> request = new HttpEntity<>(stringBuilder.toString());
+
+        commonName = commonName.contains("http://") ? commonName : "http://" + commonName;
+        String requestUrl = commonName.indexOf("/") == commonName.length() - 1 ?
+                commonName.substring(0, commonName.length() - 1) + apiEndpoint : commonName + apiEndpoint;
+
+        System.out.println(stringBuilder);
+        restTemplate.postForLocation(requestUrl, request);
     }
 
     private Date generateDate(int periodInMonths) {

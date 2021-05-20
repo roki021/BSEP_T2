@@ -16,7 +16,6 @@ public class DigitalCertificate  {
     @Column
     private Timestamp endDate;
 
-    //TODO: do I need to save this like below or some other way
     @Column
     private String commonName;
 

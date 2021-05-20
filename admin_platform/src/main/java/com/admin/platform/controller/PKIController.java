@@ -17,8 +17,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
@@ -71,6 +71,7 @@ public class PKIController {
         if(this.digitalCertificateService.createCertificate(csrId, TemplateTypes.valueOf(templateName)) == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
