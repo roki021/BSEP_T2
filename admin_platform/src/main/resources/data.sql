@@ -1,2 +1,2 @@
 INSERT INTO admin (username, password)
-VALUES ('admin', '$2a$10$PYEvyh/kbH4pV7SeKD94.eDbbiaRtd9LJnv.0Zhp15hIlA4l5zysS');
+VALUES ('admin', '$2y$12$2cfmPypTyM3ZlExc4mqCZOHaCNqabYAdTyoZiwR4KOT79zgTul4WW');

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class HospitalController {
     @GetMapping("/info")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_DOCTOR')")
     public String getHospitalInfo() {
         return "Info";
     }
