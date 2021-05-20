@@ -9,7 +9,12 @@ import com.hospitalplatform.hospital_platform.service.CertificateSigningRequestS
 import com.hospitalplatform.hospital_platform.service.HospitalService;
 import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -72,6 +77,17 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
                 new X500Principal(mapAsString), pair.getPublic());
         JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder("SHA256withRSA");
         ContentSigner signer = csBuilder.build(pair.getPrivate());
+        GeneralName[] subjectAltNames = new GeneralName[]{
+                new GeneralName(GeneralName.dNSName, csrDTO.getCommonName())
+                // TODO: with www ?? new GeneralName(GeneralName.dNSName, "www" + csrDTO.getCommonName())
+        };
+
+        Extension[] extensions = new Extension[] {
+                Extension.create(Extension.subjectAlternativeName, true, new GeneralNames(subjectAltNames))
+        };
+
+        p10Builder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, new Extensions(extensions));
+
         PKCS10CertificationRequest csr = p10Builder.build(signer);
 
         //TODO save private key

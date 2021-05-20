@@ -3,6 +3,7 @@ package com.admin.platform.service;
 
 import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.CertificateSigningRequest;
+import org.bouncycastle.asn1.x509.GeneralNames;
 
 import java.io.IOException;
 import java.security.PublicKey;
@@ -20,6 +21,8 @@ public interface CertificateSigningRequestService {
     CertificateSigningRequest findById(Long id);
 
     PublicKey getPublicKeyFromCSR(Long id);
+
+    GeneralNames getGeneralNamesFromCSR(Long id);
 
     void confirmCertificateSigningRequest(Long id);
 }

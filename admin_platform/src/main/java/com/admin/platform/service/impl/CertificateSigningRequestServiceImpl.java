@@ -5,6 +5,7 @@ import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.CertificateSigningRequest;
 import com.admin.platform.repository.CertificateSigningRequestRepository;
 import com.admin.platform.service.CertificateSigningRequestService;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
@@ -14,6 +15,8 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -31,6 +34,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class CertificateSigningRequestServiceImpl implements CertificateSigningRequestService {
@@ -96,6 +100,30 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
                     new JcaPKCS10CertificationRequest(csr.getEncoded()).setProvider("BC");
             return jcaCertRequest.getPublicKey();
         } catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public GeneralNames getGeneralNamesFromCSR(Long id) {
+        try {
+            PKCS10CertificationRequest csr = extractCertificationRequest(findById(id).getFullCertificate());
+            for(Attribute attribute : csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
+                for(ASN1Encodable value : attribute.getAttributeValues()) {
+                    Extensions extensions = Extensions.getInstance(value);
+                    GeneralNames gns = GeneralNames.fromExtensions(extensions, Extension.subjectAlternativeName);
+
+                    if (gns == null) {
+                        throw new NoSuchElementException("There is no GeneralNames element");
+                    }
+
+                    return gns;
+                }
+            }
+
+        } catch (IOException | NoSuchElementException e) {
             e.printStackTrace();
         }
 
