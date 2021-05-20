@@ -30,11 +30,4 @@ public class AuthController {
         UserTokenStateDTO token = authService.loginUser(loginDTO);
         return ResponseEntity.ok(token);
     }
-
-    @PostMapping("/certificate")
-    public ResponseEntity<String> receiveCertificate(@RequestBody byte[] request) {
-        System.out.println(new String(request));
-
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 }
