@@ -29,6 +29,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -65,6 +66,15 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
                         serialNumber,
                         request));
         eventPublisher.publishEvent(new OnCSREvent(req));
+    }
+
+    @Override
+    public void logicRemove(Long id) throws SQLException {
+        CertificateSigningRequest csr = certificateSigningRequestRepository.findById(id).orElse(null);
+        if(csr == null)
+            throw new SQLException("No CSR with given id");
+        csr.setActive(false);
+        certificateSigningRequestRepository.save(csr);
     }
 
     @Override

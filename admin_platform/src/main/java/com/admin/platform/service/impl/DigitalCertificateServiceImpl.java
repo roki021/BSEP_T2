@@ -248,9 +248,9 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     }
 
     @Override
-    public boolean isRevoked(Long serialNumber) {
+    public RevokedCertificate getIfIsRevoked(Long serialNumber) {
         return revokedCertificateRepository.
-                findBySerialNumber(new BigInteger(serialNumber.toString())).isPresent();
+                findBySerialNumber(new BigInteger(serialNumber.toString())).orElse(null);
     }
 
     @Override

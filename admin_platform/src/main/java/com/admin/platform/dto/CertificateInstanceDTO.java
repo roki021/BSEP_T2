@@ -21,6 +21,7 @@ public class CertificateInstanceDTO {
     private Date endTo;
     private Long serialNumber;
     private List<String> keyUsage;
+    private String revokeReason;
 
     public CertificateInstanceDTO(X500Name x500Name) {
         try {
@@ -118,6 +119,14 @@ public class CertificateInstanceDTO {
 
     public void setKeyUsage(List<String> keyUsage) {
         this.keyUsage = keyUsage;
+    }
+
+    public String getRevokeReason() {
+        return revokeReason;
+    }
+
+    public void setRevokeReason(String revokeReason) {
+        this.revokeReason = revokeReason;
     }
 
     private String getX509NameField(X500Name x500Name, ASN1ObjectIdentifier field) throws UnexpectedSituation {

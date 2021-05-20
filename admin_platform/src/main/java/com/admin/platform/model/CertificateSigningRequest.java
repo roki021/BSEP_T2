@@ -50,7 +50,7 @@ public class CertificateSigningRequest {
         this.email = email;
         this.uniqueIdentifier = uniqueIdentifier;
         this.fullCertificate = fullCertificate;
-        this.active = false;
+        this.active = true;
     }
 
     public CertificateSigningRequest() {
@@ -133,6 +133,8 @@ public class CertificateSigningRequest {
     }
 
     public boolean isActive() { return this.active; }
+
+    public void setActive(boolean active) { this.active = active; }
 
     public void activate() { this.active = true; }
 }

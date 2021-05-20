@@ -4,6 +4,7 @@ import com.admin.platform.constants.TemplateTypes;
 import com.admin.platform.dto.RevokeRequestDTO;
 import com.admin.platform.model.DigitalCertificate;
 import com.admin.platform.model.IssuerData;
+import com.admin.platform.model.RevokedCertificate;
 import com.admin.platform.model.SubjectData;
 import org.bouncycastle.asn1.x500.X500Name;
 
@@ -39,7 +40,7 @@ public interface DigitalCertificateService {
 
     void revokeCertificate(RevokeRequestDTO request) throws Exception;
 
-    boolean isRevoked(Long serialNumber);
+    RevokedCertificate getIfIsRevoked(Long serialNumber);
 
     X500Name getSubjectName(Long serialNumber) throws CertificateEncodingException;
 

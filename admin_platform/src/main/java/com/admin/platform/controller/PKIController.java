@@ -4,7 +4,9 @@ import com.admin.platform.constants.TemplateTypes;
 import com.admin.platform.dto.*;
 import com.admin.platform.exception.JSONException;
 import com.admin.platform.exception.impl.UnexpectedSituation;
+import com.admin.platform.model.CertificateSigningRequest;
 import com.admin.platform.model.DigitalCertificate;
+import com.admin.platform.model.RevokedCertificate;
 import com.admin.platform.service.DigitalCertificateService;
 import com.admin.platform.service.impl.CertificateSigningRequestServiceImpl;
 import org.bouncycastle.asn1.cmc.RevokeRequest;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
+import java.sql.SQLException;
 
 @RestController
 @RequestMapping("/api")
@@ -31,7 +34,7 @@ public class PKIController {
     @GetMapping("/certificate-signing-requests")
     public ResponseEntity<?> getCertificateSigningRequests() {
         return new ResponseEntity<>(
-                csrService.getAll().stream().map(csr -> new CertificateSigningRequestDTO(csr)), HttpStatus.OK);
+                csrService.getAll().stream().filter(CertificateSigningRequest::isActive).map(CertificateSigningRequestDTO::new), HttpStatus.OK);
     }
 
     @GetMapping("/certificate-signing-requests/confirm/{csrId}")
@@ -51,15 +54,21 @@ public class PKIController {
 
     @PostMapping("/issue-certificate/{csrId}/{templateName}")
     public ResponseEntity<?> issueCertificate(@PathVariable Long csrId, @PathVariable String templateName) {
-        //TODO: .. remove crs?
+        try {
+            csrService.logicRemove(csrId);
+        } catch (SQLException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         if (!templateName.equals(TemplateTypes.ROOT.toString()) &&
                 !templateName.equals(TemplateTypes.LEAF_HOSPITAL.toString())) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        this.digitalCertificateService.createCertificate(csrId, TemplateTypes.valueOf(templateName));
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        if(this.digitalCertificateService.createCertificate(csrId, TemplateTypes.valueOf(templateName)) == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/digital-certificates")
@@ -67,9 +76,9 @@ public class PKIController {
         return new ResponseEntity<>(
                 digitalCertificateService.getAll().stream().map(cert -> {
                     DigitalCertificateDTO dto = new DigitalCertificateDTO(cert);
-                    dto.setRevoked(
-                            digitalCertificateService.isRevoked(
-                                    dto.getSerialNumber().longValue()));
+                    RevokedCertificate rc = digitalCertificateService.getIfIsRevoked(
+                            dto.getSerialNumber().longValue());
+                    dto.setRevoked(rc != null);
                     return dto;
                 }), HttpStatus.OK);
     }
@@ -77,7 +86,7 @@ public class PKIController {
     @GetMapping("/digital-certificates/validity/{serialNumber}")
     public ResponseEntity<?> checkValidity(@PathVariable Long serialNumber) {
         return new ResponseEntity<>(
-                digitalCertificateService.isRevoked(serialNumber), HttpStatus.OK);
+                digitalCertificateService.getIfIsRevoked(serialNumber) != null, HttpStatus.OK);
     }
 
     @GetMapping("/digital-certificates/{serialNumber}")
@@ -92,6 +101,9 @@ public class PKIController {
             dto.setEndTo(dc.getEndDate());
             dto.setSerialNumber(dc.getSerialNumber().longValue());
             dto.setKeyUsage(digitalCertificateService.getCertKeyUsage(serialNumber));
+
+            RevokedCertificate rc = digitalCertificateService.getIfIsRevoked(serialNumber);
+            dto.setRevokeReason(rc != null ? rc.getRevokeReason() : null);
             return new ResponseEntity<>(
                     dto, HttpStatus.OK);
         } catch (CertificateEncodingException e) {
