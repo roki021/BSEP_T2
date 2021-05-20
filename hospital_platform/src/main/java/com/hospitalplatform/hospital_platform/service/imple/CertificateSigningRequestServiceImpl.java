@@ -82,7 +82,7 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder("SHA256withRSA");
         ContentSigner signer = csBuilder.build(pair.getPrivate());
         GeneralName[] subjectAltNames = new GeneralName[]{
-                new GeneralName(GeneralName.dNSName, csrDTO.getCommonName())
+                new GeneralName(GeneralName.dNSName, "localhost")
                 // TODO: with www ?? new GeneralName(GeneralName.dNSName, "www" + csrDTO.getCommonName())
         };
 

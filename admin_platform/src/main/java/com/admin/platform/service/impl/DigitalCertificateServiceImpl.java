@@ -30,6 +30,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -337,13 +338,14 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
         System.out.println(stringBuilder);
         //restTemplate.postForLocation(requestUrl, request);
-        MimeMessage message = mailSender.createMimeMessage();
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo("boban_rajovic@gmail.com"); //TODO izmeniti mejl
+        message.setSubject("Digital certificate");
+        String messageTemplate = stringBuilder.toString();
+        message.setText(messageTemplate);
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo("boban_rajovic@gmail.com");
-            helper.addAttachment("Certificate.crt", new ByteArrayResource(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)));
             mailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
