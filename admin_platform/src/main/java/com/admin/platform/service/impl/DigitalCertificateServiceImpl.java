@@ -120,7 +120,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
             keyStore.store(new FileOutputStream(platfromKeyStore.getKEYSTORE_FILE_PATH()),
                     platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
 
-            sendCertificate(certificate, digitalCertificate.getCommonName(), platfromKeyStore.getCertEndpoint());
+            sendCertificate(certificate, digitalCertificate.getCommonName(), platfromKeyStore.getCertEndpoint(), csr.getEmail());
 
             return digitalCertificate;
         } catch (IOException | CertificateException | NoSuchAlgorithmException |
@@ -320,7 +320,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         return list;
     }
 
-    private void sendCertificate(X509Certificate certificate, String commonName, String apiEndpoint)
+    private void sendCertificate(X509Certificate certificate, String commonName, String apiEndpoint, String email)
             throws CertificateEncodingException, HttpClientErrorException {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -339,7 +339,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         System.out.println(stringBuilder);
         //restTemplate.postForLocation(requestUrl, request);
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("boban_rajovic@gmail.com"); //TODO izmeniti mejl
+        message.setTo(email);
         message.setSubject("Digital certificate");
         String messageTemplate = stringBuilder.toString();
         message.setText(messageTemplate);

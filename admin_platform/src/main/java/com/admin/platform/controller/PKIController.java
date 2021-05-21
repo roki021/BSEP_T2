@@ -45,7 +45,7 @@ public class PKIController {
     @GetMapping("/certificate-signing-requests/confirm/{csrId}")
     public ResponseEntity<?> confirmCertificateSigningRequest(@PathVariable Long csrId) {
         csrService.confirmCertificateSigningRequest(csrId);
-        return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>("Request successfully confirmed!", HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/external/certificate-signing-requests")
