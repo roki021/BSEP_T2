@@ -116,7 +116,8 @@ public class PlatfromKeyStore {
                 digitalCertificateService.generateIssuerData(kp.getPrivate(), builder.build());
 
         GeneralName[] subjectAltNames = new GeneralName[]{
-                new GeneralName(GeneralName.dNSName, "localhost")
+                new GeneralName(GeneralName.dNSName, "localhost"),
+                new GeneralName(GeneralName.dNSName, "host.docker.internal")
         };
 
         SubjectData subjectData = digitalCertificateService.generateSubjectData
