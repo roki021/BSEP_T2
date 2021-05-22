@@ -55,7 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint).and()
             .authorizeRequests()
-                .antMatchers("/auth/**").permitAll()
+                .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/api/external/certificate-signing-requests").permitAll()
                 .antMatchers("/api/certificate-signing-requests/confirm/**").permitAll()
