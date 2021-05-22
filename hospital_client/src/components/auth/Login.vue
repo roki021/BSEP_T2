@@ -8,7 +8,7 @@
               <template #icon>
                 <i class="bx bx-user"></i>
               </template>
-              <template v-if="invalidUsername" #message-danger>
+              <template v-if="invalidUsernameFlag" #message-danger>
                 Username Invalid
               </template>
             </vs-input>
@@ -18,7 +18,7 @@
               <template #icon>
                 <i class="bx bx-lock-open-alt"></i>
               </template>
-              <template v-if="invalidPassword" #message-danger>
+              <template v-if="invalidPasswordFlag" #message-danger>
                 Password Invalid
               </template>
             </vs-input>
@@ -39,30 +39,36 @@ export default {
   data: () => ({
     username: '',
     password: '',
-    invalidUsername: false,
-    invalidPassword: false
+    usernameEdit: false,
+    passwordEdit: false
   }),
+  computed: {
+    invalidUsernameFlag: function () {
+      return this.usernameEdit && this.username.length == 0
+    },
+    invalidPasswordFlag: function () {
+      return this.passwordEdit && this.password.length < 8
+    },
+  },
   methods: {
     login() {
-      if (this.username.length == 0) {
-        this.invalidUsername = true
-        return
-      }
+      this.usernameEdit = true
+      this.passwordEdit = true
 
-      if (this.password.length == 0) {
-        this.invalidPassword = true
+      if (this.invalidUsernameFlag || this.invalidPasswordFlag)
         return
-      }
 
-      /*this.$store.commit('login', {
-        username: this.username,
-        password: this.password
-      })*/
       this.$store.dispatch('requestAuth', {
         username: this.username,
         password: this.password
       }).then(() => {
         this.$router.push('/')
+      }).catch(() => {
+        this.$vs.notification({
+          color: 'danger',
+          title: 'Login failed',
+          text: 'Invalid username or password.',
+        })
       })
     }
   }

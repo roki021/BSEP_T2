@@ -57,14 +57,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
                 .antMatchers("/auth/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
-                .antMatchers("/api/**").permitAll() // TODO: remove me
+                .antMatchers("/api/external/certificate-signing-requests").permitAll()
+                .antMatchers("/api/certificate-signing-requests/confirm/**").permitAll()
             .anyRequest().authenticated().and()
             .cors().and()
             .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
                         BasicAuthenticationFilter.class);
         http.csrf().disable();
 
-        http.headers().frameOptions().disable();
+        http.headers()
+                .xssProtection()
+                .and()
+                .contentSecurityPolicy("script-src 'self'")
+                .and().frameOptions().disable();
     }
 
     @Override

@@ -26,7 +26,7 @@
           Hospitals
         </vs-navbar-item>
         <template #right>
-          <vs-button flat>Logout</vs-button>
+          <vs-button v-on:click="logout" flat>Logout</vs-button>
         </template>
       </vs-navbar>
     </div>
@@ -42,6 +42,19 @@ export default {
   data: () => ({
     active: '',
   }),
+  methods: {
+    logout: function () {
+      this.$store.dispatch('requestLogout').then(() => {
+        this.$router.push({path: 'login'})
+        this.$vs.notification({
+            color: null,
+            position: "top-right",
+            title: "Logout successful",
+            text: "You have successfully logged out.",
+        });
+      })
+    }
+  },
   mounted: function () {
     var raw = this.$route.path
     this.active = raw.substring(1, raw.length)

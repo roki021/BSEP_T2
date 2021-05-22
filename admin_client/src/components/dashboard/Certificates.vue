@@ -206,6 +206,7 @@
             :loading="waitingResponse"
             v-on:click="revokeCertificate()"
             block
+            :disabled="revokeRequset.reason.length < 1"
           >
             Revoke
           </vs-button>

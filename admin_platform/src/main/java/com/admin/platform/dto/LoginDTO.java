@@ -2,14 +2,16 @@ package com.admin.platform.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class LoginDTO {
-    @NotEmpty(message = "Username is mandatory.")
+    @NotBlank(message = "Username is mandatory.")
     private String username;
 
-    @NotEmpty(message = "Password is mandatory.")
+    @NotBlank(message = "Password is mandatory.")
+    @Size(min=8, max=256, message = "Password should be between 8 and 256 characters.")
     private String password;
 
     public String getUsername() {

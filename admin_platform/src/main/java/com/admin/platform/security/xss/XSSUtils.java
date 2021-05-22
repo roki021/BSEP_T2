@@ -1,6 +1,4 @@
-package com.hospitalplatform.hospital_platform.security.xss;
-
-import org.springframework.web.util.HtmlUtils;
+package com.admin.platform.security.xss;
 
 import java.util.regex.Pattern;
 

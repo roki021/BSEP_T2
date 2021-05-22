@@ -1,8 +1,12 @@
 package com.admin.platform.dto;
 
+import javax.validation.constraints.NotBlank;
+
 public class RevokeRequestDTO {
 
+    @NotBlank
     private String reason;
+
     private Long certId;
 
     public RevokeRequestDTO() {}
