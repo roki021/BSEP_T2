@@ -1,15 +1,32 @@
 package com.hospitalplatform.hospital_platform.dto;
 
+import javax.validation.constraints.NotBlank;
+
 public class CertificateSigningRequestDTO {
 
     private Long id;
+
+    @NotBlank
     private String commonName;
+
+    @NotBlank
     private String surname;
+
+    @NotBlank
     private String givenName;
+
+    @NotBlank
     private String organization;
+
+    @NotBlank
     private String organizationUnit;
+
+    @NotBlank
     private String country;
+
+    @NotBlank
     private String email;
+
     private String serialNumber;
 
     public Long getId() {

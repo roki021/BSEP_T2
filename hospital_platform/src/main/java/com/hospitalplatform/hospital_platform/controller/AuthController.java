@@ -26,6 +26,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserTokenStateDTO> login(@RequestBody @Validated LoginDTO loginDTO, HttpServletResponse response) {
+        System.out.println(loginDTO.getUsername());
+        System.out.println(loginDTO.getPassword());
         UserTokenStateDTO token = authService.loginUser(loginDTO);
         return ResponseEntity.ok(token);
     }

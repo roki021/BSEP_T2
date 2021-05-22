@@ -21,7 +21,7 @@ public class CSRReceivedListener implements ApplicationListener<OnCSREvent> {
         message.setTo(req.getEmail());
         message.setSubject("Confirm CSR");
         String messageTemplate =
-                "<a target=\"_blank\" href=\"http://localhost:8080/api/certificate-signing-requests/confirm/%d\">Confirm</a>";
+                "<a target=\"_blank\" href=\"https://localhost:8080/api/certificate-signing-requests/confirm/%d\">Confirm request</a>";
         message.setText(String.format(messageTemplate, req.getId()));
         try {
             mailSender.send(message);
