@@ -12,6 +12,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -58,7 +61,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/api/certificate").permitAll()
-            .anyRequest().authenticated().and()
+                .antMatchers("/api/send").permitAll()
+                .anyRequest().authenticated()
+                    .and()
+                    .x509()
+                    .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                    .userDetailsService(userDetailsService())
+                    .and()
             .cors().and()
             .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
                         BasicAuthenticationFilter.class);
@@ -77,4 +86,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 "/**/*.css", "/**/*.js");
     }
 
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return (username -> {
+            System.out.println(username);
+            if (username.equals("device-1")) {
+                return new User(username, "", AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER"));
+            }else{
+                return null;
+            }
+        });
+    }
 }

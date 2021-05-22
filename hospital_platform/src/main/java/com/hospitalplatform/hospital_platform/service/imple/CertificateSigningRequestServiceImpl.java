@@ -15,6 +15,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -82,7 +83,8 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder("SHA256withRSA");
         ContentSigner signer = csBuilder.build(pair.getPrivate());
         GeneralName[] subjectAltNames = new GeneralName[]{
-                new GeneralName(GeneralName.dNSName, "localhost")
+                new GeneralName(GeneralName.dNSName, "localhost"),
+                new GeneralName(GeneralName.dNSName, "host.docker.internal")
                 // TODO: with www ?? new GeneralName(GeneralName.dNSName, "www" + csrDTO.getCommonName())
         };
 
@@ -94,11 +96,13 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
 
         PKCS10CertificationRequest csr = p10Builder.build(signer);
 
-        //TODO save private key
+        StringWriter stringWriter = new StringWriter();
+        JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter);
+        pemWriter.writeObject(pair.getPrivate());
+        pemWriter.close();
+
         FileWriter writer = new FileWriter(keyPath);
-        writer.write("-----BEGIN PRIVATE KEY-----\n");
-        writer.write(Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded()) + '\n');
-        writer.write("-----END PRIVATE KEY-----\n");
+        writer.write(stringWriter.toString());
         writer.close();
 
         StringBuilder builder = new StringBuilder();
