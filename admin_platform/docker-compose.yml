@@ -18,7 +18,7 @@ services:
   nginx-hospital:
     build: ../hospital_platform/nginx
     volumes:
-      - ../hospital_platform/ssl:/etc/ssl/certs/
+      - ../hospital_platform/ssl/keystore:/etc/ssl/certs/
     ports:
       - 8081:443
     depends_on:
