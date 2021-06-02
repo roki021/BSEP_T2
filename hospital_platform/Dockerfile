@@ -7,6 +7,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline
 
 COPY src /home/app/src
+COPY src/main/resources/application.prod.properties /home/app/src/main/resources/application.properties
 RUN mvn -Dmaven.test.skip package
 
 #

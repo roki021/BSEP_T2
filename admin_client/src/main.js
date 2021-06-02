@@ -4,6 +4,8 @@ import Login from './components/auth/Login.vue'
 import Dashboard from './components/dashboard/Dashboard.vue'
 import Certificates from './components/dashboard/Certificates.vue'
 import Requests from './components/dashboard/Requests.vue'
+import Hospitals from './components/dashboard/Hospitals.vue'
+import Hospital from './components/dashboard/Hospital.vue'
 import VueRouter from 'vue-router'
 import Vuesax from 'vuesax'
 import 'vuesax/dist/vuesax.css'
@@ -41,6 +43,14 @@ const routes = [
       {
         path: 'requests',
         component: Requests,
+      },
+      {
+        path: 'hospitals',
+        component: Hospitals
+      },
+      {
+        path: 'hospitals/:id',
+        component: Hospital
       }
     ],
     beforeEnter: ifAuthenticated

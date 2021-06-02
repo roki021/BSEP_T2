@@ -10,19 +10,19 @@
         </vs-navbar-item>
         <vs-navbar-item
           :active="active == 'certificates'"
-          v-on:click="$router.push('certificates')"
+          v-on:click="$router.push('/certificates')"
           id="certificates"
         >
           Certificates
         </vs-navbar-item>
         <vs-navbar-item
           :active="active == 'requests'"
-          v-on:click="$router.push('requests')"
+          v-on:click="$router.push('/requests')"
           id="requests"
         >
           Requests
         </vs-navbar-item>
-        <vs-navbar-item :active="active == 'hospitals'" v-on:click="$router.push('hospitals')" id="hospitals">
+        <vs-navbar-item :active="active == 'hospitals'" v-on:click="$router.push('/hospitals')" id="hospitals">
           Hospitals
         </vs-navbar-item>
         <template #right>
@@ -45,7 +45,7 @@ export default {
   methods: {
     logout: function () {
       this.$store.dispatch('requestLogout').then(() => {
-        this.$router.push({path: 'login'})
+        this.$router.push({path: '/login'})
         this.$vs.notification({
             color: null,
             position: "top-right",

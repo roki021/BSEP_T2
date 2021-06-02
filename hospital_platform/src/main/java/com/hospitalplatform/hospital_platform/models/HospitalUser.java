@@ -13,7 +13,7 @@ public abstract class HospitalUser implements UserDetails {
     @Column
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private Long id;
+    private Integer id;
 
     @Column(unique = true)
     private String username;
@@ -33,6 +33,17 @@ public abstract class HospitalUser implements UserDetails {
     @Column(unique = true)
     private String email;
 
+    public HospitalUser() {
+    }
+
+    public HospitalUser(String username, String firstName, String lastName, String password, String email) {
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.password = password;
+        this.email = email;
+    }
+
     public String getFirstName() {
         return firstName;
     }
@@ -49,11 +60,11 @@ public abstract class HospitalUser implements UserDetails {
         this.lastName = lastName;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

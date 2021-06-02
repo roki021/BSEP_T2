@@ -1,18 +1,18 @@
 package com.hospitalplatform.hospital_platform.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.hospitalplatform.hospital_platform.validator.ValidPassword;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.Pattern;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class LoginDTO {
     @NotBlank(message = "Username is mandatory.")
+    @Pattern(regexp = "([a-zA-Z0-9]+){3,50}")
     private String username;
 
-    @NotBlank(message = "Password is mandatory.")
-    @Size(min=8, max=256, message = "Password should be between 8 and 256 characters.")
+    @ValidPassword
     private String password;
 
     public String getUsername() {

@@ -1,12 +1,16 @@
 package com.hospitalplatform.hospital_platform.dto;
 
+import com.hospitalplatform.hospital_platform.validator.ValidCountryName;
+
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 public class CertificateSigningRequestDTO {
 
     private Long id;
 
-    @NotBlank
+    @Pattern(regexp = "[a-z]+[a-z-.]*:\\d+")
     private String commonName;
 
     @NotBlank
@@ -15,18 +19,19 @@ public class CertificateSigningRequestDTO {
     @NotBlank
     private String givenName;
 
-    @NotBlank
+    @Pattern(regexp = "[a-zA-Z0-9 ]+")
     private String organization;
 
-    @NotBlank
+    @Pattern(regexp = "[a-zA-Z0-9 ]+")
     private String organizationUnit;
 
-    @NotBlank
+    @ValidCountryName
     private String country;
 
-    @NotBlank
+    @Email
     private String email;
 
+    //TODO
     private String serialNumber;
 
     public Long getId() {

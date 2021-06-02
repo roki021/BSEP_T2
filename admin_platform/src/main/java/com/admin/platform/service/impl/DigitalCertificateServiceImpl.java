@@ -6,6 +6,7 @@ import com.admin.platform.constants.TemplateTypes;
 import com.admin.platform.dto.RevokeRequestDTO;
 import com.admin.platform.model.*;
 import com.admin.platform.repository.DigitalCertificateRepository;
+import com.admin.platform.repository.HospitalRepository;
 import com.admin.platform.repository.RevokedCertificateRepository;
 import com.admin.platform.service.CertificateSigningRequestService;
 import com.admin.platform.service.DigitalCertificateService;
@@ -67,6 +68,9 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private HospitalRepository hospitalRepository;
+
     @Override
     public DigitalCertificate createCertificate(Long csrId, TemplateTypes templateType) {
         CertificateSigningRequest csr = certificateSigningRequestService.findById(csrId);
@@ -121,6 +125,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                     platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
 
             sendCertificate(certificate, digitalCertificate.getCommonName(), platfromKeyStore.getCertEndpoint(), csr.getEmail());
+            hospitalRepository.save(new Hospital(csr.getCommonName(), csr.getOrganization(), csr.getOrganizationUnit()));
 
             return digitalCertificate;
         } catch (IOException | CertificateException | NoSuchAlgorithmException |

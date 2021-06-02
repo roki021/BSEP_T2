@@ -7,6 +7,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline
 
 COPY src /home/app/src
+COPY src/main/resources/application.prod.properties /home/app/src/main/resources/application.properties
 RUN mvn -Dmaven.test.skip package
 #
 # Package stage
@@ -15,5 +16,5 @@ FROM openjdk:11-jre-slim
 COPY pki /usr/local/lib/pki
 COPY --from=build /home/app/target/platform-0.0.1-SNAPSHOT.jar /usr/local/lib/demo.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar","/usr/local/lib/demo.jar"]
+ENTRYPOINT ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005", "-jar","/usr/local/lib/demo.jar"]
 # "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"
