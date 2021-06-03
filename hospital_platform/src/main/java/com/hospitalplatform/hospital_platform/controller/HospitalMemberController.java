@@ -20,6 +20,12 @@ public class HospitalMemberController {
         return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }
 
+    @DeleteMapping("/{memberId}")
+    public ResponseEntity<?>  deleteMember(@PathVariable Integer memberId) {
+        hospitalUserService.deleteUser(memberId);
+        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+    }
+
     @GetMapping
     public ResponseEntity<?> getMembers() {
         return new ResponseEntity<>(hospitalUserService.getHospitalUsers(), HttpStatus.OK);

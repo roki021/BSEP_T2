@@ -63,6 +63,19 @@ public class HospitalServiceImpl implements HospitalService {
     }
 
     @Override
+    public void deleteHospitalMember(Integer hospitalId, Integer memberId) throws Exception {
+        Optional<Hospital> hospitalDTO = hospitalRepository.findById(hospitalId);
+
+        if (hospitalDTO.isEmpty())
+            throw new Exception("Hospital does not exist.");
+
+        RestTemplate restTemplate = new RestTemplate();
+        String requestUrl = String.format(
+                "http://%s/api/external/members/%d", hospitalDTO.get().getEndpoint(), memberId);
+        restTemplate.delete(requestUrl);
+    }
+
+    @Override
     public void changeHospitalMemberRole(Integer hospitalId, Integer memberId, Object newRole) {
 
     }

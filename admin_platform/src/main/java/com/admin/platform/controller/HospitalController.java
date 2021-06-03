@@ -35,4 +35,14 @@ public class HospitalController {
     public ResponseEntity<?> getMembers(@PathVariable Integer hospitalId) throws Exception {
         return new ResponseEntity(hospitalService.getHospitalMembers(hospitalId), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{hospitalId}/members/{memberId}")
+    public ResponseEntity<?> deleteMember(@PathVariable Integer hospitalId, @PathVariable Integer memberId) {
+        try {
+            hospitalService.deleteHospitalMember(hospitalId, memberId);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+    }
 }

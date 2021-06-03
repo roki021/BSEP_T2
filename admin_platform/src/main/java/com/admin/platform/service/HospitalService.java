@@ -12,6 +12,8 @@ public interface HospitalService {
 
     void addHospitalMember(Integer hospitalId, NewMemberDTO member) throws Exception;
 
+    void deleteHospitalMember(Integer hospitalId, Integer memberId) throws Exception;
+
     void changeHospitalMemberRole(Integer hospitalId, Integer memberId, Object newRole);
     // void saveHospitalMemberPermissions(Integer hospitalId, Integer memberId, Object newPermissions);
 }

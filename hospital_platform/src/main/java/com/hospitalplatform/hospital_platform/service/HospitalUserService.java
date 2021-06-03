@@ -9,5 +9,6 @@ import java.util.List;
 public interface  HospitalUserService {
     HospitalUser getUser(String username);
     void createUser(NewMemberDTO member) throws Exception;
+    void deleteUser(Integer id);
     List<HospitalUserDTO> getHospitalUsers();
 }

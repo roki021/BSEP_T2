@@ -9,6 +9,7 @@ import com.hospitalplatform.hospital_platform.models.HospitalUser;
 import com.hospitalplatform.hospital_platform.repository.HospitalUserRepository;
 import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,10 +53,16 @@ public class HospitalUserServiceImpl implements HospitalUserService {
     }
 
     @Override
+    public void deleteUser(Integer id) {
+        try {
+            repository.deleteById(id);
+        } catch (EmptyResultDataAccessException exception) {
+        }
+    }
+
+    @Override
     public List<HospitalUserDTO> getHospitalUsers() {
         HospitalUserMapper mapper = new HospitalUserMapper();
         return repository.findAll().stream().map(user -> mapper.getDTO(user)).collect(Collectors.toList());
     }
-
-
 }

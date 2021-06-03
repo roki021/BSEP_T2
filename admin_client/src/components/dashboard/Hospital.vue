@@ -38,7 +38,7 @@
                     {{ tr.role }}
                   </vs-td>
                   <vs-td>
-                    <vs-button transparent
+                    <vs-button transparent v-on:click="showDetails(i)"
                       >Details</vs-button
                     >
                   </vs-td>
@@ -118,6 +118,76 @@
         </div>
       </template>
     </vs-dialog>
+
+    <vs-dialog v-model="activeEdit">
+      <template #header>
+        <h4 class="not-margin">Hospital member details</h4>
+      </template>
+
+      <div class="con-form">
+        <div class="center grid">
+          <vs-row>
+            <vs-col w="6"><div class="wrapper"><b>First name</b></div></vs-col>
+            <vs-col w="6">
+              <div class="wrapper">
+                <vs-input v-model="hospitalMemberDetails.firstName" disabled="true"/>
+              </div>
+            </vs-col>
+          </vs-row>
+          <vs-row>
+            <vs-col w="6"><div class="wrapper"><b>Last name</b></div></vs-col>
+            <vs-col w="6">
+              <div class="wrapper">
+                <vs-input v-model="hospitalMemberDetails.lastName" disabled="true"/>
+              </div>
+            </vs-col>
+          </vs-row>
+          <vs-row>
+            <vs-col w="6"><div class="wrapper"><b>Username</b></div></vs-col>
+            <vs-col w="6">
+              <div class="wrapper">
+                <vs-input v-model="hospitalMemberDetails.username" disabled="true"/>
+              </div>
+            </vs-col>
+          </vs-row>
+          <vs-row>
+            <vs-col w="6"><div class="wrapper"><b>Email</b></div></vs-col>
+            <vs-col w="6">
+              <div class="wrapper">
+                <vs-input v-model="hospitalMemberDetails.email" disabled="true"/>
+              </div>
+            </vs-col>
+          </vs-row>
+          <vs-row>
+            <vs-col w="6"><div class="wrapper"><b>Role</b></div></vs-col>
+            <vs-col w="6">
+              <div class="wrapper">
+                <vs-select placeholder="Select" v-model="hospitalMemberDetails.role">
+                  <vs-option label="DOCTOR" value="doctor">
+                    DOCTOR
+                  </vs-option>
+                  <vs-option label="ADMIN" value="admin">
+                    ADMIN
+                  </vs-option>
+                </vs-select>
+              </div>
+            </vs-col>
+          </vs-row>
+        </div>
+      </div>
+      <template #footer>
+        <div class="footer-dialog">
+          <vs-row>
+            <vs-col offset="6" w="3">
+              <vs-button style="margin-left: -5px" :loading="waitingDeleteResponse" danger block v-on:click="deleteMember()"> Delete </vs-button>
+            </vs-col>
+            <vs-col w="3">
+              <vs-button :loading="waitingUpdateResponse" block v-on:click="updateMember()"> Update </vs-button>
+            </vs-col>
+          </vs-row>
+        </div>
+      </template>
+    </vs-dialog>
   </div>
 </template>
 
@@ -129,8 +199,11 @@ export default {
     hospitalMembers: [],
     hospitalId: null,
     activeNew: false,
+    activeEdit: false,
     role: 'doctor',
     waitingResponse: false,
+    waitingDeleteResponse: false,
+    waitingUpdateResponse: false,
     hospitalMember: {
       firstName: '',
       lastName: '',
@@ -138,7 +211,15 @@ export default {
       username: '',
       role: 'doctor',
       password: ''
-    }
+    },
+    hospitalMemberDetails: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      username: '',
+      role: 'doctor',
+    },
+    selected: null
   }),
   mounted() {
     // console.log('fetch data hospital ' + this.$route.params.id)
@@ -172,6 +253,29 @@ export default {
         .then((response) => {
           this.hospitalMembers = response.data
         })
+    },
+    deleteMember() {
+      this.waitingDeleteResponse = true
+      axios
+        .delete(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}/members/${this.selected.id}`)
+        .then(() => {
+          this.waitingDeleteResponse = false
+          this.activeEdit = false
+          this.selected = null
+          this.getMembers()
+        })
+    },
+    updateMember() {
+      this.waitingUpdateResponse = true
+    },
+    showDetails(selected) {
+      this.selected = this.hospitalMembers[selected]
+      this.hospitalMemberDetails.firstName = this.selected.firstName
+      this.hospitalMemberDetails.lastName = this.selected.lastName
+      this.hospitalMemberDetails.email = this.selected.email
+      this.hospitalMemberDetails.username = this.selected.username
+      this.hospitalMemberDetails.role = this.selected.role
+      this.activeEdit = true
     }
   }
 }
