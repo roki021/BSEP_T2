@@ -1,6 +1,6 @@
 package com.admin.platform.service.impl;
 
-import com.admin.platform.config.PlatfromKeyStore;
+import com.admin.platform.config.PlatformKeyStore;
 import com.admin.platform.constants.CryptConstants;
 import com.admin.platform.constants.TemplateTypes;
 import com.admin.platform.dto.RevokeRequestDTO;
@@ -27,23 +27,16 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
@@ -63,7 +56,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     private RevokedCertificateRepository revokedCertificateRepository;
 
     @Autowired
-    private PlatfromKeyStore platfromKeyStore;
+    private PlatformKeyStore platformKeyStore;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -75,9 +68,9 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     public DigitalCertificate createCertificate(Long csrId, TemplateTypes templateType) {
         CertificateSigningRequest csr = certificateSigningRequestService.findById(csrId);
 
-        PrivateKey issuerKey = readPrivateKey(platfromKeyStore.getKEYSTORE_FILE_PATH(),
-                platfromKeyStore.getKEYSTORE_PASSWORD(), CryptConstants.ROOT_ALIAS,
-                platfromKeyStore.getKEYSTORE_PASSWORD());
+        PrivateKey issuerKey = readPrivateKey(platformKeyStore.getKeyStoreFilePath(),
+                platformKeyStore.getKeyStorePassword(), CryptConstants.ROOT_ALIAS,
+                platformKeyStore.getKeyStorePassword());
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
         builder.addRDN(BCStyle.CN, "localhost"); //TODO: take care
         builder.addRDN(BCStyle.O, "MZ-Srbija");
@@ -106,33 +99,28 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
             digitalCertificate.setAlias(csr.getId().toString());
 
             KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
-            File f = new File(platfromKeyStore.getKEYSTORE_FILE_PATH());
+            File f = new File(platformKeyStore.getKeyStoreFilePath());
             if (f.exists()){
                 keyStore.load(new FileInputStream(f),
-                        platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
+                        platformKeyStore.getKeyStorePassword().toCharArray());
 
             }else {
-                keyStore.load(null, platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
+                keyStore.load(null, platformKeyStore.getKeyStorePassword().toCharArray());
             }
 
             save(digitalCertificate);
 
             keyStore.setKeyEntry(csr.getId().toString(), issuerKey,
-                    platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray(),
+                    platformKeyStore.getKeyStorePassword().toCharArray(),
                     new Certificate[]{certificate});
 
-            keyStore.store(new FileOutputStream(platfromKeyStore.getKEYSTORE_FILE_PATH()),
-                    platfromKeyStore.getKEYSTORE_PASSWORD().toCharArray());
+            keyStore.store(new FileOutputStream(platformKeyStore.getKeyStoreFilePath()),
+                    platformKeyStore.getKeyStorePassword().toCharArray());
 
-            sendCertificate(certificate, digitalCertificate.getCommonName(), platfromKeyStore.getCertEndpoint(), csr.getEmail());
+            sendCertificate(certificate, csr.getEmail());
             hospitalRepository.save(new Hospital(csr.getCommonName(), csr.getOrganization(), csr.getOrganizationUnit()));
 
             return digitalCertificate;
-        } catch (IOException | CertificateException | NoSuchAlgorithmException |
-                NoSuchProviderException | KeyStoreException e) {
-            e.printStackTrace();
-        } catch (HttpClientErrorException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -290,8 +278,8 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     @Override
     public X500Name getSubjectName(Long serialNumber) throws CertificateEncodingException {
         DigitalCertificate dc = getBySerialNumber(new BigInteger(serialNumber.toString()));
-        X509Certificate cert = (X509Certificate)readCertificate(platfromKeyStore.getKEYSTORE_FILE_PATH(),
-                platfromKeyStore.getKEYSTORE_PASSWORD(), dc.getAlias());
+        X509Certificate cert = (X509Certificate)readCertificate(platformKeyStore.getKeyStoreFilePath(),
+                platformKeyStore.getKeyStorePassword(), dc.getAlias());
 
         return new JcaX509CertificateHolder(cert).getSubject();
     }
@@ -299,8 +287,8 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     @Override
     public List<String> getCertKeyUsage(Long serialNumber) {
         DigitalCertificate dc = getBySerialNumber(new BigInteger(serialNumber.toString()));
-        X509Certificate cert = (X509Certificate)readCertificate(platfromKeyStore.getKEYSTORE_FILE_PATH(),
-                platfromKeyStore.getKEYSTORE_PASSWORD(), dc.getAlias());
+        X509Certificate cert = (X509Certificate)readCertificate(platformKeyStore.getKeyStoreFilePath(),
+                platformKeyStore.getKeyStorePassword(), dc.getAlias());
 
         boolean[] keyUsage = cert.getKeyUsage();
 
@@ -325,28 +313,21 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         return list;
     }
 
-    private void sendCertificate(X509Certificate certificate, String commonName, String apiEndpoint, String email)
-            throws CertificateEncodingException, HttpClientErrorException {
-        RestTemplate restTemplate = new RestTemplate();
+    private void sendCertificate(X509Certificate certificate, String email)
+            throws HttpClientErrorException, IOException {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("-----BEGIN CERTIFICATE-----\n");
-        stringBuilder.append(DatatypeConverter.printBase64Binary(certificate.getEncoded()));
-        stringBuilder.append("\n-----END CERTIFICATE-----");
+        StringWriter stringWriter = new StringWriter();
+        JcaPEMWriter pm = new JcaPEMWriter(stringWriter);
+        pm.writeObject(certificate);
+        pm.close();
 
-        HttpEntity<String> request = new HttpEntity<>(stringBuilder.toString());
-
-        commonName = commonName.contains("https://") ? commonName : "https://" + commonName;
-        String requestUrl = commonName.indexOf("/") == commonName.length() - 1 ?
-                commonName.substring(0, commonName.length() - 1) + apiEndpoint : commonName + apiEndpoint;
-
-        System.out.println(stringBuilder);
-        //restTemplate.postForLocation(requestUrl, request);
+        System.out.println(stringWriter);
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("Digital certificate");
-        String messageTemplate = stringBuilder.toString();
+        String messageTemplate = stringWriter.toString();
         message.setText(messageTemplate);
         try {
             mailSender.send(message);

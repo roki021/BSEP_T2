@@ -23,6 +23,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -30,15 +31,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.yaml.snakeyaml.util.ArrayUtils;
 
-import javax.security.auth.Subject;
 import javax.security.auth.x500.X500Principal;
-import javax.xml.bind.DatatypeConverter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +47,10 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
 
     @Autowired
     private HospitalService hospitalService;
+
+    @Autowired
+    @Qualifier("ignoreSSLConfig")
+    private RestTemplate ignoreSSLRestTemplate;
 
     @Value("${admin_platform.csr_request_url}")
     private String requestUrl;
@@ -105,18 +106,15 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         writer.write(stringWriter.toString());
         writer.close();
 
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("-----BEGIN CERTIFICATE REQUEST-----\n");
-        builder.append(DatatypeConverter.printBase64Binary(csr.getEncoded()));
-        builder.append("\n-----END CERTIFICATE REQUEST-----");
-
-        RestTemplate restTemplate = new RestTemplate();
+        StringWriter builder = new StringWriter();
+        pemWriter = new JcaPEMWriter(builder);
+        pemWriter.writeObject(csr);
+        pemWriter.close();
 
         HttpEntity<String> request = new HttpEntity<>(builder.toString());
 
         try {
-            HttpStatus httpStatus = restTemplate.exchange(
+            HttpStatus httpStatus = ignoreSSLRestTemplate.exchange(
                     requestUrl,
                     HttpMethod.POST,
                     request,
