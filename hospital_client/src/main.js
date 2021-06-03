@@ -3,6 +3,7 @@ import App from './App.vue'
 import Login from './components/auth/Login.vue'
 import Dashboard from './components/dashboard/Dashboard.vue'
 import CertificateRequest from './components/dashboard/CertificateRequest.vue'
+import Devices from './components/dashboard/Devices.vue'
 import VueRouter from 'vue-router'
 import Vuesax from 'vuesax'
 import 'vuesax/dist/vuesax.css'
@@ -36,6 +37,10 @@ const routes = [
         path: 'certificate_request',
         component: CertificateRequest
       },
+      {
+        path: 'devices',
+        component: Devices
+      }
     ],
     beforeEnter: ifAuthenticated
   },

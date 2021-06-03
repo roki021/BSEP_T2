@@ -12,6 +12,13 @@
         >
           Certificate Request
         </vs-navbar-item>
+        <vs-navbar-item
+          :active="active == 'devices'"
+          v-on:click="$router.push('devices')"
+          id="devices"
+        >
+          Devices
+        </vs-navbar-item>
         <template #right>
           <vs-button v-on:click="logout" flat>Logout</vs-button>
         </template>
