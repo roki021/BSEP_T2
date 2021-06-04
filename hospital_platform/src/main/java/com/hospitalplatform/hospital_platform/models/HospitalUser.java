@@ -1,18 +1,20 @@
 package com.hospitalplatform.hospital_platform.models;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public abstract class HospitalUser implements UserDetails {
+public class HospitalUser implements UserDetails {
     @Column
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(unique = true)
@@ -33,15 +35,26 @@ public abstract class HospitalUser implements UserDetails {
     @Column(unique = true)
     private String email;
 
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "hospital_users_roles",
+            joinColumns = @JoinColumn(
+                    name = "hospital_user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"))
+    private Collection<Role> roles;
+
     public HospitalUser() {
     }
 
-    public HospitalUser(String username, String firstName, String lastName, String password, String email) {
+    public HospitalUser(
+            String username, String firstName, String lastName, String password, String email, Collection<Role> roles) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.email = email;
+        this.roles = roles;
     }
 
     public String getFirstName() {
@@ -92,9 +105,20 @@ public abstract class HospitalUser implements UserDetails {
         this.lastPasswordResetDate = lastPasswordResetDate;
     }
 
+    public Collection<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Collection<Role> roles) {
+        this.roles = roles;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        for (Role role : roles)
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        return authorities;
     }
 
     @Override

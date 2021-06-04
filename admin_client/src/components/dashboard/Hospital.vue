@@ -267,6 +267,14 @@ export default {
     },
     updateMember() {
       this.waitingUpdateResponse = true
+      axios
+        .put(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}/members/${this.selected.id}/roles`, { "role": this.hospitalMemberDetails.role })
+        .then(() => {
+          this.waitingUpdateResponse = false
+          this.activeEdit = false
+          this.selected = null
+          this.getMembers()
+        })
     },
     showDetails(selected) {
       this.selected = this.hospitalMembers[selected]

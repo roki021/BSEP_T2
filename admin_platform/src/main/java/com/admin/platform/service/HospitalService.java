@@ -3,6 +3,7 @@ package com.admin.platform.service;
 import com.admin.platform.dto.HospitalDTO;
 import com.admin.platform.dto.HospitalUserDTO;
 import com.admin.platform.dto.NewMemberDTO;
+import com.admin.platform.dto.RoleUpdateDTO;
 
 import java.util.List;
 
@@ -14,6 +15,6 @@ public interface HospitalService {
 
     void deleteHospitalMember(Integer hospitalId, Integer memberId) throws Exception;
 
-    void changeHospitalMemberRole(Integer hospitalId, Integer memberId, Object newRole);
-    // void saveHospitalMemberPermissions(Integer hospitalId, Integer memberId, Object newPermissions);
+    void changeHospitalMemberRole(Integer hospitalId, Integer memberId, RoleUpdateDTO newRole) throws Exception;
+    //    // void saveHospitalMemberPermissions(Integer hospitalId, Integer memberId, Object newPermissions);
 }

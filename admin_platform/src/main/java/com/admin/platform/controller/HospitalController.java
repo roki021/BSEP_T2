@@ -1,6 +1,7 @@
 package com.admin.platform.controller;
 
 import com.admin.platform.dto.NewMemberDTO;
+import com.admin.platform.dto.RoleUpdateDTO;
 import com.admin.platform.service.HospitalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,19 @@ public class HospitalController {
     public ResponseEntity<?> deleteMember(@PathVariable Integer hospitalId, @PathVariable Integer memberId) {
         try {
             hospitalService.deleteHospitalMember(hospitalId, memberId);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("/{hospitalId}/members/{memberId}/roles")
+    public ResponseEntity<?> changeMemberRole(
+            @PathVariable Integer hospitalId,
+            @PathVariable Integer memberId,
+            @RequestBody @Validated RoleUpdateDTO roleUpdateDTO) {
+        try {
+            hospitalService.changeHospitalMemberRole(hospitalId, memberId, roleUpdateDTO);
         } catch (Exception exception) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }

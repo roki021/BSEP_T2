@@ -1,6 +1,7 @@
 package com.hospitalplatform.hospital_platform.controller;
 
 import com.hospitalplatform.hospital_platform.dto.NewMemberDTO;
+import com.hospitalplatform.hospital_platform.dto.RoleUpdateDTO;
 import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,5 +30,12 @@ public class HospitalMemberController {
     @GetMapping
     public ResponseEntity<?> getMembers() {
         return new ResponseEntity<>(hospitalUserService.getHospitalUsers(), HttpStatus.OK);
+    }
+
+    @PutMapping("/{memberId}/roles")
+    public ResponseEntity<?> changeMemberRole(
+            @PathVariable Integer memberId, @RequestBody @Validated RoleUpdateDTO roleUpdateDTO) {
+        hospitalUserService.changeUserRole(memberId, roleUpdateDTO);
+        return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
     }
 }
