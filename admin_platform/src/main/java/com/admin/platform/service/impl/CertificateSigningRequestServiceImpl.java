@@ -1,5 +1,6 @@
 package com.admin.platform.service.impl;
 
+import com.admin.platform.constants.CsrType;
 import com.admin.platform.event.OnCSREvent;
 import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.CertificateSigningRequest;
@@ -57,6 +58,7 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         String country = getCRSX509NameField(x500Name, BCStyle.C);
         String email = getCRSX509NameField(x500Name, BCStyle.E);
         String serialNumber = getCRSX509NameField(x500Name, BCStyle.SERIALNUMBER);
+        String title = getCRSX509NameField(x500Name, BCStyle.T);
 
         CertificateSigningRequest req = certificateSigningRequestRepository.save(
                 new CertificateSigningRequest(
@@ -68,6 +70,7 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
                         country,
                         email,
                         serialNumber,
+                        CsrType.valueOf(title),
                         request));
         eventPublisher.publishEvent(new OnCSREvent(req));
     }

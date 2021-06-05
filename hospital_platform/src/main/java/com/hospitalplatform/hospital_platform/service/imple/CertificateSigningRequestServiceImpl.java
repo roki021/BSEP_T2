@@ -70,6 +70,7 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         subjectData.put("O", csrDTO.getOrganization());
         subjectData.put("OU", csrDTO.getOrganizationUnit());
         subjectData.put("C", csrDTO.getCountry());
+        subjectData.put("T", csrDTO.getTitle());
         subjectData.put("emailAddress", csrDTO.getEmail());
         subjectData.put("serialNumber", csrDTO.getSerialNumber());
 

@@ -2,6 +2,7 @@ package com.admin.platform.service.impl;
 
 import com.admin.platform.config.PlatformKeyStore;
 import com.admin.platform.constants.CryptConstants;
+import com.admin.platform.constants.CsrType;
 import com.admin.platform.constants.TemplateTypes;
 import com.admin.platform.dto.RevokeRequestDTO;
 import com.admin.platform.model.*;
@@ -27,16 +28,20 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.mail.internet.MimeMessage;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
@@ -116,9 +121,11 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
             keyStore.store(new FileOutputStream(platformKeyStore.getKeyStoreFilePath()),
                     platformKeyStore.getKeyStorePassword().toCharArray());
-
-            sendCertificate(certificate, csr.getEmail());
-            hospitalRepository.save(new Hospital(csr.getCommonName(), csr.getOrganization(), csr.getOrganizationUnit()));
+            X509Certificate caCert = (X509Certificate)readCertificate(platformKeyStore.getKeyStoreFilePath(),
+                    platformKeyStore.getKeyStorePassword(), CryptConstants.ROOT_ALIAS);
+            sendCertificate(certificate, caCert, csr.getEmail());
+            if(csr.getTitle() == CsrType.HOSPITAL)
+                hospitalRepository.save(new Hospital(csr.getCommonName(), csr.getOrganization(), csr.getOrganizationUnit()));
 
             return digitalCertificate;
         } catch (Exception e) {
@@ -313,26 +320,35 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         return list;
     }
 
-    private void sendCertificate(X509Certificate certificate, String email)
+    private void sendCertificate(X509Certificate certificate,
+                                 X509Certificate caCertificate,
+                                 String email)
             throws HttpClientErrorException, IOException {
 
-        StringBuilder stringBuilder = new StringBuilder();
-
-        StringWriter stringWriter = new StringWriter();
-        JcaPEMWriter pm = new JcaPEMWriter(stringWriter);
+        StringWriter certWriter = new StringWriter();
+        JcaPEMWriter pm = new JcaPEMWriter(certWriter);
         pm.writeObject(certificate);
         pm.close();
 
-        System.out.println(stringWriter);
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Digital certificate");
-        String messageTemplate = stringWriter.toString();
-        message.setText(messageTemplate);
+        StringWriter caCertWriter = new StringWriter();
+        pm = new JcaPEMWriter(caCertWriter);
+        pm.writeObject(certificate);
+        pm.close();
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
-            mailSender.send(message);
-        } catch (Exception e) {
-            e.printStackTrace();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setFrom("cultoffer@gmail.com");
+            helper.setTo(email);
+            helper.setSubject("Digital certificate");
+            helper.setText("Your certificate and CA certificate are attached to this mail.");
+            helper.addAttachment("certificate.crt",
+                    new ByteArrayResource(certWriter.toString().getBytes(StandardCharsets.UTF_8)));
+            helper.addAttachment("caCertificate.crt",
+                    new ByteArrayResource(caCertWriter.toString().getBytes(StandardCharsets.UTF_8)));
+            mailSender.send(mimeMessage);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 

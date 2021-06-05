@@ -6,7 +6,8 @@ import javax.persistence.*;
 public class Device {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name="seq", initialValue=1000, allocationSize=100) // TODO: CHANGE THIS TO HEX VALUE ???
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "seq")
     private Integer id;
 
     @Column(unique = true)

@@ -13,6 +13,7 @@ public class CertificateSigningRequestDTO {
     private String country;
     private String email;
     private String uniqueIdentifier;
+    private String title;
 
     public CertificateSigningRequestDTO(CertificateSigningRequest csr) {
         this.id = csr.getId();
@@ -24,6 +25,8 @@ public class CertificateSigningRequestDTO {
         this.country = csr.getCountry();
         this.email = csr.getEmail();
         this.uniqueIdentifier = csr.getUniqueIdentifier();
+        this.title = csr.getTitle().toString();
+        title = title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase();
     }
 
     public Long getId() {
@@ -96,5 +99,13 @@ public class CertificateSigningRequestDTO {
 
     public void setUniqueIdentifier(String uniqueIdentifier) {
         this.uniqueIdentifier = uniqueIdentifier;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

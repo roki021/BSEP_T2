@@ -19,4 +19,28 @@ public class CSRAutofillDataDTO {
         this.organizationUnit = organizationUnit;
         this.country = country;
     }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public String getGivenName() {
+        return givenName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getOrganization() {
+        return organization;
+    }
+
+    public String getOrganizationUnit() {
+        return organizationUnit;
+    }
+
+    public String getCountry() {
+        return country;
+    }
 }

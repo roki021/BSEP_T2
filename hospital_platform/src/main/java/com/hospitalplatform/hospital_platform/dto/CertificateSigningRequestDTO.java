@@ -34,6 +34,22 @@ public class CertificateSigningRequestDTO {
     //TODO
     private String serialNumber;
 
+    private String title;
+
+    public CertificateSigningRequestDTO() {}
+
+    public CertificateSigningRequestDTO(String commonName, String surname, String givenName, String organization, String organizationUnit, String country, String email, String serialNumber, String title) {
+        this.commonName = commonName;
+        this.surname = surname;
+        this.givenName = givenName;
+        this.organization = organization;
+        this.organizationUnit = organizationUnit;
+        this.country = country;
+        this.email = email;
+        this.serialNumber = serialNumber;
+        this.title = title;
+    }
+
     public Long getId() {
         return id;
     }
@@ -104,5 +120,13 @@ public class CertificateSigningRequestDTO {
 
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }
