@@ -34,7 +34,12 @@ public class HospitalController {
 
     @GetMapping("/{hospitalId}")
     public ResponseEntity<?> getMembers(@PathVariable Integer hospitalId) throws Exception {
-        return new ResponseEntity(hospitalService.getHospitalMembers(hospitalId), HttpStatus.OK);
+        try {
+            return new ResponseEntity(hospitalService.getHospitalMembers(hospitalId), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
     }
 
     @DeleteMapping("/{hospitalId}/members/{memberId}")

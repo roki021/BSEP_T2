@@ -13,7 +13,7 @@ public class Role {
     @Column
     private String name;
 
-    @ManyToMany(mappedBy = "roles")
+    @ManyToMany(mappedBy = "roles", cascade = CascadeType.ALL)
     private Collection<HospitalUser> users;
 
     public Long getId() {

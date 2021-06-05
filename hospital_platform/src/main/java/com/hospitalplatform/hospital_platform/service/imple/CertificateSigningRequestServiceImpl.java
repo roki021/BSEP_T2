@@ -3,11 +3,14 @@ package com.hospitalplatform.hospital_platform.service.imple;
 import com.hospitalplatform.hospital_platform.dto.CSRAutofillDataDTO;
 import com.hospitalplatform.hospital_platform.dto.CertificateSigningRequestDTO;
 import com.hospitalplatform.hospital_platform.dto.HospitalConfigurationDTO;
+import com.hospitalplatform.hospital_platform.dto.SecretCommunicationTokenDTO;
 import com.hospitalplatform.hospital_platform.exception.impl.InvalidAPIResponse;
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
+import com.hospitalplatform.hospital_platform.repository.SecretCommunicationTokenRepository;
 import com.hospitalplatform.hospital_platform.service.CertificateSigningRequestService;
 import com.hospitalplatform.hospital_platform.service.HospitalService;
 import com.hospitalplatform.hospital_platform.service.HospitalUserService;
+import com.hospitalplatform.hospital_platform.service.SecurityService;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -28,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -47,6 +51,9 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
 
     @Autowired
     private HospitalService hospitalService;
+
+    @Autowired
+    private SecurityService securityService;
 
     @Autowired
     @Qualifier("ignoreSSLConfig")
@@ -114,11 +121,12 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         HttpEntity<String> request = new HttpEntity<>(builder.toString());
 
         try {
-            HttpStatus httpStatus = ignoreSSLRestTemplate.exchange(
+            ResponseEntity<SecretCommunicationTokenDTO> token = ignoreSSLRestTemplate.exchange(
                     requestUrl,
                     HttpMethod.POST,
                     request,
-                    String.class).getStatusCode();
+                    SecretCommunicationTokenDTO.class);
+            securityService.setSecurityToken(token.getBody());
         } catch (HttpClientErrorException exception) {
             throw new InvalidAPIResponse("Invalid API response.");
         }

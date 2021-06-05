@@ -222,12 +222,6 @@ export default {
     selected: null
   }),
   mounted() {
-    // console.log('fetch data hospital ' + this.$route.params.id)
-    /*axios
-      .get(`${process.env.VUE_APP_ADMIN_API}/hospitals`)
-      .then((response) => {
-        this.hospitalMembers = response.data
-      })*/
       this.getMembers()
   },
   methods: {
@@ -246,12 +240,37 @@ export default {
           this.hospitalMembers.password = ''
           this.getMembers()
         })
+        .catch(() => {
+          this.waitingResponse = false
+          this.$vs.notification({
+              color: 'danger',
+              position: null,
+              title: 'Oups!',
+              text: 'Something went wrong, please try again.'
+          })
+        })
     },
     getMembers() {
       axios
         .get(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}`)
         .then((response) => {
           this.hospitalMembers = response.data
+        })
+        .catch((error) => {
+          if (error.response.status)
+            this.$vs.notification({
+                color: 'danger',
+                position: null,
+                title: 'Not permitted',
+                text: 'Hospital admin should allow you to access hospital resources.'
+            })
+          else
+            this.$vs.notification({
+              color: 'danger',
+              position: null,
+              title: 'Oups!',
+              text: 'Something went wrong, please try again.'
+          })
         })
     },
     deleteMember() {
@@ -264,6 +283,15 @@ export default {
           this.selected = null
           this.getMembers()
         })
+        .catch(() => {
+          this.waitingDeleteResponse = false
+          this.$vs.notification({
+              color: 'danger',
+              position: null,
+              title: 'Oups!',
+              text: 'Something went wrong, please try again.'
+          })
+        })
     },
     updateMember() {
       this.waitingUpdateResponse = true
@@ -274,6 +302,15 @@ export default {
           this.activeEdit = false
           this.selected = null
           this.getMembers()
+        })
+        .catch(() => {
+          this.waitingUpdateResponse = false
+          this.$vs.notification({
+              color: 'danger',
+              position: null,
+              title: 'Oups!',
+              text: 'Something went wrong, please try again.'
+          })
         })
     },
     showDetails(selected) {

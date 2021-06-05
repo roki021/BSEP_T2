@@ -118,7 +118,12 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                     platformKeyStore.getKeyStorePassword().toCharArray());
 
             sendCertificate(certificate, csr.getEmail());
-            hospitalRepository.save(new Hospital(csr.getCommonName(), csr.getOrganization(), csr.getOrganizationUnit()));
+            hospitalRepository.save(
+                    new Hospital(
+                            csr.getCommonName(),
+                            csr.getOrganization(),
+                            csr.getOrganizationUnit(),
+                            csr.getCommunicationToken()));
 
             return digitalCertificate;
         } catch (Exception e) {

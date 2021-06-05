@@ -50,12 +50,10 @@ public class PKIController {
     }
 
     @PostMapping("/external/certificate-signing-requests")
-    public ResponseEntity<?> receiveCertificateSigningRequest(
+    public ResponseEntity<SecretCommunicationTokenDTO> receiveCertificateSigningRequest(
             @RequestBody byte[] request) throws IOException, UnexpectedSituation {
 
-        csrService.saveRequest(request);
-
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        return ResponseEntity.ok(csrService.saveRequest(request));
     }
 
     @PostMapping("/issue-certificate/{csrId}/{templateName}")

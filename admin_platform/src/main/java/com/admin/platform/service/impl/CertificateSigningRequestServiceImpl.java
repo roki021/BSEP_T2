@@ -1,5 +1,6 @@
 package com.admin.platform.service.impl;
 
+import com.admin.platform.dto.SecretCommunicationTokenDTO;
 import com.admin.platform.event.OnCSREvent;
 import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.CertificateSigningRequest;
@@ -35,6 +36,7 @@ import java.security.cert.CertificateFactory;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 public class CertificateSigningRequestServiceImpl implements CertificateSigningRequestService {
@@ -44,7 +46,7 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
     @Autowired
     private CertificateSigningRequestRepository certificateSigningRequestRepository;
 
-    public void saveRequest(byte[] request) throws IOException, UnexpectedSituation {
+    public SecretCommunicationTokenDTO saveRequest(byte[] request) throws IOException, UnexpectedSituation {
         PKCS10CertificationRequest csr = this.extractCertificationRequest(request);
 
         X500Name x500Name = csr.getSubject();
@@ -58,6 +60,8 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         String email = getCRSX509NameField(x500Name, BCStyle.E);
         String serialNumber = getCRSX509NameField(x500Name, BCStyle.SERIALNUMBER);
 
+        String token = UUID.randomUUID().toString();
+
         CertificateSigningRequest req = certificateSigningRequestRepository.save(
                 new CertificateSigningRequest(
                         commonName,
@@ -68,8 +72,11 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
                         country,
                         email,
                         serialNumber,
-                        request));
+                        request,
+                        token));
         eventPublisher.publishEvent(new OnCSREvent(req));
+
+        return new SecretCommunicationTokenDTO(token);
     }
 
     @Override

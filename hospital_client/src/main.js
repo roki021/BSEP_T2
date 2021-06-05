@@ -4,6 +4,7 @@ import Login from './components/auth/Login.vue'
 import Dashboard from './components/dashboard/Dashboard.vue'
 import CertificateRequest from './components/dashboard/CertificateRequest.vue'
 import Devices from './components/dashboard/Devices.vue'
+import Security from './components/dashboard/Security.vue'
 import VueRouter from 'vue-router'
 import Vuesax from 'vuesax'
 import 'vuesax/dist/vuesax.css'
@@ -40,6 +41,10 @@ const routes = [
       {
         path: 'devices',
         component: Devices
+      },
+      {
+        path: 'security',
+        component: Security
       }
     ],
     beforeEnter: ifAuthenticated

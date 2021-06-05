@@ -36,11 +36,24 @@ public class CertificateSigningRequest {
     @Column
     private boolean active;
 
+    @Column
+    private String communicationToken;
+
     @Lob
     @Column(columnDefinition = "BLOB")
     private byte[] fullCertificate;
 
-    public CertificateSigningRequest(String commonName, String surname, String givenName, String organization, String organizationUnit, String country, String email, String uniqueIdentifier, byte[] fullCertificate) {
+    public CertificateSigningRequest(
+            String commonName,
+            String surname,
+            String givenName,
+            String organization,
+            String organizationUnit,
+            String country,
+            String email,
+            String uniqueIdentifier,
+            byte[] fullCertificate,
+            String communicationToken) {
         this.commonName = commonName;
         this.surname = surname;
         this.givenName = givenName;
@@ -51,6 +64,7 @@ public class CertificateSigningRequest {
         this.uniqueIdentifier = uniqueIdentifier;
         this.fullCertificate = fullCertificate;
         this.active = true; //TODO: false
+        this.communicationToken = communicationToken;
     }
 
     public CertificateSigningRequest() {
@@ -137,4 +151,12 @@ public class CertificateSigningRequest {
     public void setActive(boolean active) { this.active = active; }
 
     public void activate() { this.active = true; }
+
+    public String getCommunicationToken() {
+        return communicationToken;
+    }
+
+    public void setCommunicationToken(String communicationToken) {
+        this.communicationToken = communicationToken;
+    }
 }

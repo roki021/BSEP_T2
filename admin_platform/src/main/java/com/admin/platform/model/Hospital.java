@@ -20,12 +20,16 @@ public class Hospital {
     @Column
     private String organizationUnit;
 
+    @Column
+    private String communicationToken;
+
     public Hospital() {}
 
-    public Hospital(String endpoint, String organization, String organizationUnit) {
+    public Hospital(String endpoint, String organization, String organizationUnit, String communicationToken) {
         this.endpoint = endpoint;
         this.organization = organization;
         this.organizationUnit = organizationUnit;
+        this.communicationToken = communicationToken;
     }
 
     public Integer getId() {
@@ -58,5 +62,13 @@ public class Hospital {
 
     public void setOrganizationUnit(String organizationUnit) {
         this.organizationUnit = organizationUnit;
+    }
+
+    public String getCommunicationToken() {
+        return communicationToken;
+    }
+
+    public void setCommunicationToken(String communicationToken) {
+        this.communicationToken = communicationToken;
     }
 }

@@ -5,9 +5,6 @@
         <template #left>
           <i style="font-size: 25px" class="bx bxs-dashboard"></i>
         </template>
-        <vs-navbar-item :active="active == 'accounts'" v-on:click="$router.push('accounts')" id="accounts">
-          Accounts
-        </vs-navbar-item>
         <vs-navbar-item
           :active="active == 'certificates'"
           v-on:click="$router.push('/certificates')"

@@ -11,6 +11,8 @@ import com.admin.platform.service.HospitalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -47,8 +49,11 @@ public class HospitalServiceImpl implements HospitalService {
             throw new Exception("Hospital does not exist.");
 
         String requestUrl = String.format("http://%s/api/external/members", hospitalDTO.get().getEndpoint());
-        ResponseEntity<HospitalUserDTO[]> responseEntity = restTemplate.getForEntity(
-                requestUrl, HospitalUserDTO[].class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
+        HttpEntity<String> entity = new HttpEntity<>("body", headers);
+        ResponseEntity<HospitalUserDTO[]> responseEntity =
+                restTemplate.exchange(requestUrl, HttpMethod.GET, entity, HospitalUserDTO[].class);
 
         if (responseEntity.getStatusCodeValue() != 200)
             throw new Exception("Unable to get hospital members.");
@@ -63,7 +68,9 @@ public class HospitalServiceImpl implements HospitalService {
         if (hospitalDTO.isEmpty())
             throw new Exception("Hospital does not exist.");
 
-        HttpEntity<NewMemberDTO> request = new HttpEntity<>(memberDTO);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
+        HttpEntity<NewMemberDTO> request = new HttpEntity<>(memberDTO, headers);
         String requestUrl = String.format("http://%s/api/external/members", hospitalDTO.get().getEndpoint());
         restTemplate.postForLocation(requestUrl, request);
     }
@@ -77,7 +84,10 @@ public class HospitalServiceImpl implements HospitalService {
 
         String requestUrl = String.format(
                 "http://%s/api/external/members/%d", hospitalDTO.get().getEndpoint(), memberId);
-        restTemplate.delete(requestUrl);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
+        HttpEntity<String> entity = new HttpEntity<>("body", headers);
+        restTemplate.exchange(requestUrl, HttpMethod.DELETE, entity, Object.class);
     }
 
     @Override
@@ -88,7 +98,9 @@ public class HospitalServiceImpl implements HospitalService {
         if (hospitalDTO.isEmpty())
             throw new Exception("Hospital does not exist.");
 
-        HttpEntity<RoleUpdateDTO> request = new HttpEntity<>(newRole);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
+        HttpEntity<RoleUpdateDTO> request = new HttpEntity<>(newRole, headers);
         String requestUrl = String.format(
                 "http://%s/api/external/members/%d/roles", hospitalDTO.get().getEndpoint(), memberId);
         restTemplate.put(requestUrl, request);

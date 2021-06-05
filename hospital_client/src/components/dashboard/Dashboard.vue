@@ -19,6 +19,13 @@
         >
           Devices
         </vs-navbar-item>
+        <vs-navbar-item
+          :active="active == 'security'"
+          v-on:click="$router.push('security')"
+          id="security"
+        >
+          Security
+        </vs-navbar-item>
         <template #right>
           <vs-button v-on:click="logout" flat>Logout</vs-button>
         </template>
