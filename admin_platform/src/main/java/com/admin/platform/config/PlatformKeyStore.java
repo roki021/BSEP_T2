@@ -88,7 +88,7 @@ public class PlatformKeyStore {
                         new Timestamp(cert.getNotBefore().getTime()),
                         new Timestamp(cert.getNotAfter().getTime()),
                         IETFUtils.valueToString(cn.getFirst().getValue()),
-                        cert.getSerialNumber().toString()
+                        CryptConstants.ROOT_ALIAS
                 ));
             }
         } else {

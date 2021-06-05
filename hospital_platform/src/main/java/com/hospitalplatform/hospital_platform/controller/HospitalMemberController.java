@@ -21,7 +21,7 @@ public class HospitalMemberController {
 
     @PostMapping
     public ResponseEntity<?> createMember(@RequestHeader("X-sudo-key") String key,
-                                          @RequestBody @Validated NewMemberDTO member) throws Exception {
+                                          @RequestBody @Validated NewMemberDTO member) throws Exception {System.out.println(key);
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
@@ -31,7 +31,7 @@ public class HospitalMemberController {
 
     @DeleteMapping("/{memberId}")
     public ResponseEntity<?>  deleteMember(@RequestHeader("X-sudo-key") String key,
-                                           @PathVariable Integer memberId) {
+                                           @PathVariable Integer memberId) {System.out.println(key);
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
@@ -40,7 +40,7 @@ public class HospitalMemberController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getMembers(@RequestHeader("X-sudo-key") String key) {
+    public ResponseEntity<?> getMembers(@RequestHeader("X-sudo-key") String key) {System.out.println(key);
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
@@ -51,6 +51,7 @@ public class HospitalMemberController {
     public ResponseEntity<?> changeMemberRole(@RequestHeader("X-sudo-key") String key,
                                               @PathVariable Integer memberId,
                                               @RequestBody @Validated RoleUpdateDTO roleUpdateDTO) {
+        System.out.println(key);
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 

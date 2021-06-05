@@ -8,6 +8,7 @@
               <vs-tr>
                 <vs-th> ID </vs-th>
                 <vs-th> Common name </vs-th>
+                <vs-th> Type </vs-th>
                 <vs-th> &nbsp; </vs-th>
               </vs-tr>
             </template>
@@ -18,6 +19,9 @@
                 </vs-td>
                 <vs-td>
                   {{ tr.commonName }}
+                </vs-td>
+                <vs-td>
+                  {{ tr.title }}
                 </vs-td>
                 <vs-td>
                   <vs-button transparent @click="activate(i)"
@@ -68,6 +72,10 @@
           <vs-row v-if="activeRequest.uniqueIdentifier">
             <vs-col w="6"><div class="wrapper"><b>Unique identifier</b></div></vs-col>
             <vs-col w="6"><div class="wrapper">{{ activeRequest.uniqueIdentifier }}</div></vs-col>
+          </vs-row>
+          <vs-row v-if="activeRequest.title">
+            <vs-col w="6"><div class="wrapper"><b>CSR Type</b></div></vs-col>
+            <vs-col w="6"><div class="wrapper">{{ activeRequest.title }}</div></vs-col>
           </vs-row>
           <vs-row align="center" justify="center">
             <vs-col w="6"><div class="wrapper-template-input"><b>Template</b></div></vs-col>

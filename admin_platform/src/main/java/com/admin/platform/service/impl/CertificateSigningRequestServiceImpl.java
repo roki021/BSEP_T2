@@ -1,6 +1,7 @@
 package com.admin.platform.service.impl;
 
 import com.admin.platform.dto.SecretCommunicationTokenDTO;
+import com.admin.platform.constants.CsrType;
 import com.admin.platform.event.OnCSREvent;
 import com.admin.platform.exception.impl.UnexpectedSituation;
 import com.admin.platform.model.CertificateSigningRequest;
@@ -8,8 +9,6 @@ import com.admin.platform.repository.CertificateSigningRequestRepository;
 import com.admin.platform.service.CertificateSigningRequestService;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
@@ -30,9 +29,6 @@ import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -59,6 +55,7 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
         String country = getCRSX509NameField(x500Name, BCStyle.C);
         String email = getCRSX509NameField(x500Name, BCStyle.E);
         String serialNumber = getCRSX509NameField(x500Name, BCStyle.SERIALNUMBER);
+        String title = getCRSX509NameField(x500Name, BCStyle.T);
 
         String token = UUID.randomUUID().toString();
 
@@ -72,8 +69,9 @@ public class CertificateSigningRequestServiceImpl implements CertificateSigningR
                         country,
                         email,
                         serialNumber,
-                        request,
-                        token));
+                        CsrType.valueOf(title),
+                        token,
+                        request));
         eventPublisher.publishEvent(new OnCSREvent(req));
 
         return new SecretCommunicationTokenDTO(token);

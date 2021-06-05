@@ -72,6 +72,7 @@ export default {
       organization: "",
       organizationUnit: "",
       country: "",
+      title: "HOSPITAL"
     },
     sending: false,
   }),

@@ -1,5 +1,7 @@
 package com.admin.platform.model;
 
+import com.admin.platform.constants.CsrType;
+
 import javax.persistence.*;
 
 @Entity
@@ -34,6 +36,10 @@ public class CertificateSigningRequest {
     private String uniqueIdentifier;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private CsrType title;
+
+    @Column
     private boolean active;
 
     @Column
@@ -43,17 +49,10 @@ public class CertificateSigningRequest {
     @Column(columnDefinition = "BLOB")
     private byte[] fullCertificate;
 
-    public CertificateSigningRequest(
-            String commonName,
-            String surname,
-            String givenName,
-            String organization,
-            String organizationUnit,
-            String country,
-            String email,
-            String uniqueIdentifier,
-            byte[] fullCertificate,
-            String communicationToken) {
+    public CertificateSigningRequest(String commonName, String surname, String givenName,
+                                     String organization, String organizationUnit, String country,
+                                     String email, String uniqueIdentifier, CsrType title, String communicationToken,
+                                     byte[] fullCertificate) {
         this.commonName = commonName;
         this.surname = surname;
         this.givenName = givenName;
@@ -62,6 +61,7 @@ public class CertificateSigningRequest {
         this.country = country;
         this.email = email;
         this.uniqueIdentifier = uniqueIdentifier;
+        this.title = title;
         this.fullCertificate = fullCertificate;
         this.active = true; //TODO: false
         this.communicationToken = communicationToken;
@@ -144,6 +144,14 @@ public class CertificateSigningRequest {
 
     public void setUniqueIdentifier(String uniqueIdentifier) {
         this.uniqueIdentifier = uniqueIdentifier;
+    }
+
+    public CsrType getTitle() {
+        return title;
+    }
+
+    public void setTitle(CsrType title) {
+        this.title = title;
     }
 
     public boolean isActive() { return this.active; }

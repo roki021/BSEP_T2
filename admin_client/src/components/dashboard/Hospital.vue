@@ -256,21 +256,13 @@ export default {
         .then((response) => {
           this.hospitalMembers = response.data
         })
-        .catch((error) => {
-          if (error.response.status)
+        .catch(() => {
             this.$vs.notification({
                 color: 'danger',
                 position: null,
                 title: 'Not permitted',
                 text: 'Hospital admin should allow you to access hospital resources.'
             })
-          else
-            this.$vs.notification({
-              color: 'danger',
-              position: null,
-              title: 'Oups!',
-              text: 'Something went wrong, please try again.'
-          })
         })
     },
     deleteMember() {

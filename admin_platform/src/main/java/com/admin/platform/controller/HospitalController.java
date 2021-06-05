@@ -37,7 +37,7 @@ public class HospitalController {
         try {
             return new ResponseEntity(hospitalService.getHospitalMembers(hospitalId), HttpStatus.OK);
         } catch (Exception exception) {
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
 
     }
