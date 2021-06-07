@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class HospitalUser implements UserDetails {
@@ -35,7 +36,7 @@ public class HospitalUser implements UserDetails {
     @Column(unique = true)
     private String email;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "hospital_users_roles",
             joinColumns = @JoinColumn(
@@ -44,17 +45,32 @@ public class HospitalUser implements UserDetails {
                     name = "role_id", referencedColumnName = "id"))
     private Collection<Role> roles;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "users_privileges",
+            joinColumns =
+            @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "privilege_id", referencedColumnName = "id"))
+    private Set<Privilege> privileges;
+
     public HospitalUser() {
     }
 
     public HospitalUser(
-            String username, String firstName, String lastName, String password, String email, Collection<Role> roles) {
+            String username,
+            String firstName,
+            String lastName,
+            String password,
+            String email,
+            Collection<Role> roles,
+            Set<Privilege> privileges) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.email = email;
         this.roles = roles;
+        this.privileges = privileges;
     }
 
     public String getFirstName() {
@@ -118,6 +134,10 @@ public class HospitalUser implements UserDetails {
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (Role role : roles)
             authorities.add(new SimpleGrantedAuthority(role.getName()));
+
+        for (Privilege privilege : privileges)
+            authorities.add(new SimpleGrantedAuthority(privilege.getName()));
+
         return authorities;
     }
 
@@ -149,5 +169,13 @@ public class HospitalUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public Set<Privilege> getPrivileges() {
+        return privileges;
+    }
+
+    public void setPrivileges(Set<Privilege> privileges) {
+        this.privileges = privileges;
     }
 }

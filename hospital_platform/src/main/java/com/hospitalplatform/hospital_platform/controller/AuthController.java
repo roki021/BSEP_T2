@@ -32,16 +32,4 @@ public class AuthController {
         UserTokenStateDTO token = authService.loginUser(loginDTO);
         return ResponseEntity.ok(token);
     }
-
-    @PostMapping("/hello-doctor")
-    @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<String> helloDoctor() {
-        return new ResponseEntity<>("Hello Doctor", HttpStatus.OK);
-    }
-
-    @PostMapping("/hello-admin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> helloAdmin() {
-        return new ResponseEntity<>("Hello Admin", HttpStatus.OK);
-    }
 }

@@ -16,7 +16,7 @@ import java.io.IOException;
 public class CertificateController {
     @Autowired
     private CertificateService certificateService;
-
+    //TODO: jel ovo sluzi za ista?
     @PostMapping
     public ResponseEntity<String> receiveCertificate(@RequestBody byte[] request) throws IOException {
         System.out.println(new String(request));

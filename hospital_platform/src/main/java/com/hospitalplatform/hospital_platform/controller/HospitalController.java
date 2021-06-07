@@ -11,6 +11,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLException;
 
+//TODO: da li mi treba ova klasa?
+
 @RestController
 @RequestMapping("/api")
 public class HospitalController {

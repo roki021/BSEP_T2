@@ -10,6 +10,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -26,11 +27,13 @@ public class DeviceController {
     private CertificateSigningRequestService certificateSigningRequestService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') || (hasRole('DOCTOR') && hasAuthority('READ_DEVICES_PRIVILEGE'))")
     public ResponseEntity<List<DeviceDTO>> getAll() {
         return ResponseEntity.ok(deviceService.getAll());
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') && hasAuthority('WRITE_DEVICES_PRIVILEGE')")
     public ResponseEntity<?> addNew(@RequestBody DeviceDTO deviceDTO, Principal user) {
         try {
             DeviceDTO saved = deviceService.addDevice(deviceDTO);

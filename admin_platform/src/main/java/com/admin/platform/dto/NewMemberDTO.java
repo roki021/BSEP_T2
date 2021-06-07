@@ -1,11 +1,15 @@
 package com.admin.platform.dto;
 
+import com.admin.platform.privileges.Privilege;
 import com.admin.platform.validator.ValidPassword;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class NewMemberDTO {
@@ -26,4 +30,35 @@ public class NewMemberDTO {
 
     @Pattern(regexp = "(admin|doctor)")
     private String role;
+
+    @Enumerated(EnumType.STRING)
+    private List<Privilege> privileges;
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public List<Privilege> getPrivileges() {
+        return privileges;
+    }
 }

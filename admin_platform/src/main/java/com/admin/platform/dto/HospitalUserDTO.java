@@ -1,11 +1,15 @@
 package com.admin.platform.dto;
 
+import com.admin.platform.privileges.Privilege;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class HospitalUserDTO {
@@ -27,13 +31,24 @@ public class HospitalUserDTO {
     @Pattern(regexp = "(admin|doctor)")
     private String role;
 
-    public HospitalUserDTO(Integer id, String firstName, String lastName, String email, String username, String role) {
+    @Enumerated(EnumType.STRING)
+    private List<Privilege> privileges;
+
+    public HospitalUserDTO(
+            Integer id,
+            String firstName,
+            String lastName,
+            String email,
+            String username,
+            String role,
+            List<Privilege> privileges) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.username = username;
         this.role = role;
+        this.privileges = privileges;
     }
 
     public HospitalUserDTO() {
@@ -61,5 +76,9 @@ public class HospitalUserDTO {
 
     public String getRole() {
         return role;
+    }
+
+    public List<Privilege> getPrivileges() {
+        return privileges;
     }
 }

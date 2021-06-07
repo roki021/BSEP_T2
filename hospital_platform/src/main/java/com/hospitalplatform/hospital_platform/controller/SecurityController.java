@@ -20,21 +20,21 @@ public class SecurityController {
     private SecurityService service;
 
     @GetMapping("/token")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN') && hasAuthority('READ_TOKEN_STATUS_PRIVILEGE')")
     public ResponseEntity<?> getToken()
             throws OperatorCreationException, IOException, InvalidAPIResponse {
         return ResponseEntity.ok(service.getSecurityToken());
     }
 
     @PostMapping("/token/activate")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN') && hasAuthority('CHANGE_TOKEN_STATUS_PRIVILEGE')")
     public ResponseEntity<Void> activateToken() throws Exception {
         service.changeSecurityTokenStatus(true);
         return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/token/deactivate")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN') && hasAuthority('CHANGE_TOKEN_STATUS_PRIVILEGE')")
     public ResponseEntity<Void> deactivateToken() throws Exception {
         service.changeSecurityTokenStatus(false);
         return new ResponseEntity<>(null, HttpStatus.ACCEPTED);

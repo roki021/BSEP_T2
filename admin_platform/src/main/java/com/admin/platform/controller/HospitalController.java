@@ -60,6 +60,7 @@ public class HospitalController {
         try {
             hospitalService.changeHospitalMemberRole(hospitalId, memberId, roleUpdateDTO);
         } catch (Exception exception) {
+            exception.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);

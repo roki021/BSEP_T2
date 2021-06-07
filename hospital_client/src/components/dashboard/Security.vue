@@ -25,7 +25,7 @@
 import axios from 'axios'
 export default {
     data: () => ({
-        token: 'token',
+        token: '',
         active: false,
         sendingRequest: false
     }),

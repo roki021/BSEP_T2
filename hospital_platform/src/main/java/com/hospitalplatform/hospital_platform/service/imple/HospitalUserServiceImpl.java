@@ -5,8 +5,10 @@ import com.hospitalplatform.hospital_platform.dto.NewMemberDTO;
 import com.hospitalplatform.hospital_platform.dto.RoleUpdateDTO;
 import com.hospitalplatform.hospital_platform.mapper.HospitalUserMapper;
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
+import com.hospitalplatform.hospital_platform.models.Privilege;
 import com.hospitalplatform.hospital_platform.models.Role;
 import com.hospitalplatform.hospital_platform.repository.HospitalUserRepository;
+import com.hospitalplatform.hospital_platform.repository.PrivilegeRepository;
 import com.hospitalplatform.hospital_platform.repository.RoleRepository;
 import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +29,9 @@ public class HospitalUserServiceImpl implements HospitalUserService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private PrivilegeRepository privilegeRepository;
+
     @Override
     public HospitalUser getUser(String username) {
         return repository.findByUsername(username);
@@ -38,6 +41,7 @@ public class HospitalUserServiceImpl implements HospitalUserService {
     public void createUser(NewMemberDTO member) throws Exception {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); //TODO: autowired doesn't work for some reason
         List<Role> roles = new ArrayList<>();
+        Set<Privilege> privilegeSet = new HashSet<>();
 
         if (member.getRole().equals("doctor"))
             roles.add(roleRepository.findByName("ROLE_DOCTOR").get());
@@ -46,6 +50,13 @@ public class HospitalUserServiceImpl implements HospitalUserService {
         else
             throw new Exception("Invalid user role.");
 
+        //TODO check if privilege is suitable for role!!!
+        for (com.hospitalplatform.hospital_platform.privileges.Privilege p : member.getPrivileges()) {
+            Optional<Privilege> pri = privilegeRepository.findByName(p.toString());
+            if (pri.isPresent())
+                privilegeSet.add(pri.get());
+        }
+
         repository.save(
                 new HospitalUser(
                         member.getUsername(),
@@ -53,7 +64,8 @@ public class HospitalUserServiceImpl implements HospitalUserService {
                         member.getLastName(),
                         passwordEncoder.encode(member.getPassword()),
                         member.getEmail(),
-                        roles
+                        roles,
+                        privilegeSet
                 )
         );
     }
@@ -82,6 +94,14 @@ public class HospitalUserServiceImpl implements HospitalUserService {
 
         hospitalUser.getRoles().clear();
         hospitalUser.getRoles().add(newRole);
+
+        hospitalUser.getPrivileges().clear();
+        for (com.hospitalplatform.hospital_platform.privileges.Privilege p : roleUpdateDTO.getPrivileges()) {
+            Optional<Privilege> pri = privilegeRepository.findByName(p.toString());
+            if (pri.isPresent())
+                hospitalUser.getPrivileges().add(pri.get());
+        }
+
         repository.save(hospitalUser);
     }
 

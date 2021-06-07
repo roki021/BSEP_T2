@@ -68,6 +68,8 @@ public class HospitalServiceImpl implements HospitalService {
         if (hospitalDTO.isEmpty())
             throw new Exception("Hospital does not exist.");
 
+        //TODO: check rules and privileges!!!
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
         HttpEntity<NewMemberDTO> request = new HttpEntity<>(memberDTO, headers);

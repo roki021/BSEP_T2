@@ -5,7 +5,7 @@
           <div class="container">
             <h1>{{ organization }}</h1>
             <br />
-            <vs-button style="float: right; margin-bottom: 10px;" v-on:click="activeNew = true"
+            <vs-button style="float: right; margin-bottom: 10px;" v-on:click="showCreate()"
               >
                 Create new member
             </vs-button>
@@ -56,40 +56,48 @@
       <div class="con-form">
         <div class="center grid">
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>First name</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>First name</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-input v-model="hospitalMember.firstName" />
               </div>
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Last name</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>Last name</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-input v-model="hospitalMember.lastName" />
               </div>
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Username</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>Username</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-input v-model="hospitalMember.username" />
               </div>
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Email</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>Email</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-input v-model="hospitalMember.email" />
               </div>
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Role</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>Password</b></div></vs-col>
+            <vs-col w="7">
+              <div class="wrapper">
+                <vs-input type="password" v-model="hospitalMember.password" />
+              </div>
+            </vs-col>
+          </vs-row>
+          <vs-row>
+            <vs-col w="5"><div class="wrapper"><b>Role</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-select placeholder="Select" v-model="hospitalMember.role">
                   <vs-option label="DOCTOR" value="doctor">
@@ -103,11 +111,22 @@
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Password</b></div></vs-col>
-            <vs-col w="6">
-              <div class="wrapper">
-                <vs-input type="password" v-model="hospitalMember.password" />
-              </div>
+            <vs-col w="5"><div class="wrapper"><b>Privileges</b></div></vs-col>
+            <vs-col w="7">
+              <template v-if="hospitalMember.role == 'admin'">
+                <div class="wrapper" v-for="p in privileges.admin" :key="p.privilege">
+                  <vs-switch v-model="p.value">
+                    {{ p.privilege }}
+                  </vs-switch>
+                </div>
+              </template>
+              <template v-else>
+                <div class="wrapper" v-for="p in privileges.doctor" :key="p.privilege">
+                  <vs-switch v-model="p.value">
+                    {{ p.privilege }}
+                  </vs-switch>
+                </div>
+              </template>
             </vs-col>
           </vs-row>
         </div>
@@ -127,40 +146,40 @@
       <div class="con-form">
         <div class="center grid">
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>First name</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>First name</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-input v-model="hospitalMemberDetails.firstName" disabled="true"/>
               </div>
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Last name</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>Last name</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-input v-model="hospitalMemberDetails.lastName" disabled="true"/>
               </div>
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Username</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>Username</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-input v-model="hospitalMemberDetails.username" disabled="true"/>
               </div>
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Email</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>Email</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-input v-model="hospitalMemberDetails.email" disabled="true"/>
               </div>
             </vs-col>
           </vs-row>
           <vs-row>
-            <vs-col w="6"><div class="wrapper"><b>Role</b></div></vs-col>
-            <vs-col w="6">
+            <vs-col w="5"><div class="wrapper"><b>Role</b></div></vs-col>
+            <vs-col w="7">
               <div class="wrapper">
                 <vs-select placeholder="Select" v-model="hospitalMemberDetails.role">
                   <vs-option label="DOCTOR" value="doctor">
@@ -171,6 +190,25 @@
                   </vs-option>
                 </vs-select>
               </div>
+            </vs-col>
+          </vs-row>
+          <vs-row>
+            <vs-col w="5"><div class="wrapper"><b>Privileges</b></div></vs-col>
+            <vs-col w="7">
+              <template v-if="hospitalMemberDetails.role == 'admin'">
+                <div class="wrapper" v-for="p in privileges.admin" :key="p.privilege">
+                  <vs-switch v-model="p.value">
+                    {{ p.privilege }}
+                  </vs-switch>
+                </div>
+              </template>
+              <template v-else>
+                <div class="wrapper" v-for="p in privileges.doctor" :key="p.privilege">
+                  <vs-switch v-model="p.value">
+                    {{ p.privilege }}
+                  </vs-switch>
+                </div>
+              </template>
             </vs-col>
           </vs-row>
         </div>
@@ -219,25 +257,74 @@ export default {
       username: '',
       role: 'doctor',
     },
-    selected: null
+    selected: null,
+    privileges: {
+      admin: [
+        {
+          privilege: 'READ_DEVICES',
+          value: false
+
+        },
+        {
+          privilege: 'WRITE_DEVICES',
+          value: false
+        },
+        {
+          privilege: 'CREATE_CSR',
+          value: false
+        },
+        {
+          privilege: 'CHANGE_TOKEN_STATUS',
+          value: false
+        },
+        {
+          privilege: 'READ_TOKEN_STATUS',
+          value: false
+        }
+      ],
+      doctor: [
+        {
+          privilege: 'READ_DEVICES',
+          value: false
+        }
+      ]
+    }
   }),
   mounted() {
       this.getMembers()
   },
   methods: {
+    showCreate() {
+      this.activeNew = true
+
+      for (let p of this.privileges.admin) 
+        p.value = false
+      for (let p of this.privileges.doctor)
+        p.value = false
+
+      
+    },
     createMember() {
       this.waitingResponse = true
+      let payload = {...this.hospitalMember}
+      let privileges = []
+      if (payload.role == 'admin')
+        privileges = this.privileges.admin.filter(x => x.value).map(x => x.privilege + '_PRIVILEGE')
+      else if (payload.role == 'doctor')
+        privileges = this.privileges.doctor.filter(x => x.value).map(x => x.privilege + '_PRIVILEGE')
+      payload.privileges = privileges
+
       axios
-        .post(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}/members`, this.hospitalMember)
+        .post(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}/members`, payload)
         .then(() => {
           this.waitingResponse = false
           this.activeNew = false
-          this.hospitalMembers.firstName = ''
-          this.hospitalMembers.lastName = ''
-          this.hospitalMembers.email = ''
-          this.hospitalMembers.username = ''
-          this.hospitalMembers.role = 'doctor'
-          this.hospitalMembers.password = ''
+          this.hospitalMember.firstName = ''
+          this.hospitalMember.lastName = ''
+          this.hospitalMember.email = ''
+          this.hospitalMember.username = ''
+          this.hospitalMember.role = 'doctor'
+          this.hospitalMember.password = ''
           this.getMembers()
         })
         .catch(() => {
@@ -287,8 +374,14 @@ export default {
     },
     updateMember() {
       this.waitingUpdateResponse = true
+      let privileges = []
+      if (this.hospitalMemberDetails.role == 'admin')
+        privileges = this.privileges.admin.filter(x => x.value).map(x => x.privilege + '_PRIVILEGE')
+      else if (this.hospitalMemberDetails.role == 'doctor')
+        privileges = this.privileges.doctor.filter(x => x.value).map(x => x.privilege + '_PRIVILEGE')
+
       axios
-        .put(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}/members/${this.selected.id}/roles`, { "role": this.hospitalMemberDetails.role })
+        .put(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}/members/${this.selected.id}/roles`, { "role": this.hospitalMemberDetails.role, "privileges": privileges })
         .then(() => {
           this.waitingUpdateResponse = false
           this.activeEdit = false
@@ -306,12 +399,30 @@ export default {
         })
     },
     showDetails(selected) {
+      for (let p of this.privileges.admin) 
+        p.value = false
+      for (let p of this.privileges.doctor)
+        p.value = false
+
       this.selected = this.hospitalMembers[selected]
       this.hospitalMemberDetails.firstName = this.selected.firstName
       this.hospitalMemberDetails.lastName = this.selected.lastName
       this.hospitalMemberDetails.email = this.selected.email
       this.hospitalMemberDetails.username = this.selected.username
       this.hospitalMemberDetails.role = this.selected.role
+
+      let tmp = null
+      if (this.selected.role == 'admin')
+        tmp = this.privileges.admin
+      else
+        tmp = this.privileges.doctor
+
+      for (let p of tmp)
+        if (this.selected.privileges.filter(pr => p.privilege == pr.substr(0, pr.indexOf('_PRIVILEGE'))).length > 0)
+          p.value = true
+        else
+          p.value = false
+
       this.activeEdit = true
     }
   }

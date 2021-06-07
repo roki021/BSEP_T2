@@ -23,16 +23,15 @@ public class CertificateSigningRequestController {
     private CertificateSigningRequestService certificateSigningRequestService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') && hasAuthority('CREATE_CSR_PRIVILEGE')")
     public ResponseEntity<?> sendCertificateSigningRequest(@RequestBody @Validated CertificateSigningRequestDTO csr)
             throws OperatorCreationException, IOException, InvalidAPIResponse {
-        System.out.println("Pristiglo: " + csr.getCommonName());
         certificateSigningRequestService.sendRequest(csr);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
     @GetMapping("/autofill-data")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') && hasAuthority('CREATE_CSR_PRIVILEGE')")
     public ResponseEntity<?> getFormAutofillData(Principal principal) {
         CSRAutofillDataDTO autofillDataDTO = certificateSigningRequestService.getAutofillData(principal);
         return new ResponseEntity<>(autofillDataDTO, HttpStatus.OK);
