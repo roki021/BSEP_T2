@@ -13,8 +13,10 @@ export const store = new Vuex.Store({
         requestAuth: ({commit}, user) => {
             return new Promise((resolve, reject) => {
                 axios
-                .post(`${process.env.VUE_APP_HOSPITAL_API}/auth/login`, user)
+                .post(`${process.env.VUE_APP_HOSPITAL_API}/auth/login`, user, {withCredentials: true})
                 .then(response => {
+                    console.log(response.headers)
+
                     var token = response.data.accessToken
                     localStorage.setItem('user-token', token)
                     axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
@@ -39,7 +41,7 @@ export const store = new Vuex.Store({
         getAllDevices: ({commit}) => {
             return new Promise((resolve, reject) => {
                 axios
-                .get(`${process.env.VUE_APP_HOSPITAL_API}/devices`)
+                .get(`${process.env.VUE_APP_HOSPITAL_API}/devices`, {withCredentials: true})
                 .then(response => {
                     commit('setDevices', response.data)
                     resolve(response.data);
@@ -55,7 +57,7 @@ export const store = new Vuex.Store({
             console.log(device);
             return new Promise((resolve, reject) => {
                 axios
-                .post(`${process.env.VUE_APP_HOSPITAL_API}/devices`, device)
+                .post(`${process.env.VUE_APP_HOSPITAL_API}/devices`, device, {withCredentials: true})
                 .then(response => {
                     resolve(response.data);
                 })

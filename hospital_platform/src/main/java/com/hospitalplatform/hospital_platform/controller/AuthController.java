@@ -1,11 +1,13 @@
 package com.hospitalplatform.hospital_platform.controller;
 
+import com.hospitalplatform.hospital_platform.dto.IntermediateToken;
 import com.hospitalplatform.hospital_platform.dto.LoginDTO;
 import com.hospitalplatform.hospital_platform.dto.UserTokenStateDTO;
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
 import com.hospitalplatform.hospital_platform.service.AuthService;
 import com.hospitalplatform.hospital_platform.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 
 @RestController
 @RequestMapping("api/auth")
@@ -27,9 +31,19 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserTokenStateDTO> login(@RequestBody @Validated LoginDTO loginDTO, HttpServletResponse response) {
-        System.out.println(loginDTO.getUsername());
-        System.out.println(loginDTO.getPassword());
-        UserTokenStateDTO token = authService.loginUser(loginDTO);
-        return ResponseEntity.ok(token);
+        IntermediateToken token = null;
+        try {
+            token = authService.loginUser(loginDTO);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add(
+                "Set-Cookie",
+                "__Secure-Fgp=" + token.getFingerprint() + "; SameSite=Strict; HttpOnly; Secure");
+
+        return new ResponseEntity<UserTokenStateDTO>(token.getUserTokenStateDTO(), headers, HttpStatus.OK);
     }
 }

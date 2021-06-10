@@ -9,7 +9,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.bind.DatatypeConverter;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.HashMap;
 
 @Component
 public class TokenUtils {
@@ -33,13 +38,14 @@ public class TokenUtils {
 
     private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String fingerprintHash) {
         return Jwts.builder()
                 .setIssuer(APP_NAME)
                 .setSubject(username)
                 .setAudience(generateAudience())
                 .setIssuedAt(new Date())
                 .setExpiration(generateExpirationDate())
+                .claim("userFingerprint", fingerprintHash)
                 .signWith(SIGNATURE_ALGORITHM, SECRET).compact();
     }
 
@@ -73,13 +79,29 @@ public class TokenUtils {
                 && (!(this.isTokenExpired(token)) || this.ignoreTokenExpiration(token)));
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    public Boolean validateToken(String token, UserDetails userDetails, String fingerprint) {
         HospitalUser user = (HospitalUser) userDetails;
         final String username = getUsernameFromToken(token);
         final Date created = getIssuedAtDateFromToken(token);
+        String tokenFingerprintHashed = this.getFingerprintHashFromToken(token);
 
-        return (username != null && username.equals(((HospitalUser) userDetails).getUsername())
-                && !isCreatedBeforeLastPasswordReset(created, user.getLastPasswordResetDate()));
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            return false;
+        }
+        byte[] userFingerprintDigest = new byte[0];
+        try {
+            userFingerprintDigest = digest.digest(fingerprint.getBytes("utf-8"));
+        } catch (UnsupportedEncodingException e) {
+            return false;
+        }
+
+        String userFingerprintHash = DatatypeConverter.printHexBinary(userFingerprintDigest);
+
+        return userFingerprintHash.equals(tokenFingerprintHashed) && username != null && username.equals(((HospitalUser) userDetails).getUsername())
+                && !isCreatedBeforeLastPasswordReset(created, user.getLastPasswordResetDate());
     }
 
     public String getUsernameFromToken(String token) {
@@ -102,6 +124,11 @@ public class TokenUtils {
             issueAt = null;
         }
         return issueAt;
+    }
+
+    public String getFingerprintHashFromToken(String token) {
+        Claims claims = this.getAllClaimsFromToken(token);
+        return String.valueOf(claims.get("userFingerprint"));
     }
 
     public String getAudienceFromToken(String token) {
