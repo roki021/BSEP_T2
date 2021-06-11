@@ -8,6 +8,7 @@ import com.admin.platform.model.CertificateSigningRequest;
 import com.admin.platform.model.DigitalCertificate;
 import com.admin.platform.model.RevokedCertificate;
 import com.admin.platform.service.DigitalCertificateService;
+import com.admin.platform.service.OCSPService;
 import com.admin.platform.service.impl.CertificateSigningRequestServiceImpl;
 import org.apache.coyote.Response;
 import org.bouncycastle.asn1.cmc.RevokeRequest;
@@ -35,6 +36,9 @@ public class PKIController {
 
     @Autowired
     private DigitalCertificateService digitalCertificateService;
+
+    @Autowired
+    private OCSPService ocspService;
 
     @GetMapping("/certificate-signing-requests")
     @PreAuthorize("hasAnyRole('ADMIN')")
@@ -83,7 +87,7 @@ public class PKIController {
         return new ResponseEntity<>(
                 digitalCertificateService.getAll().stream().map(cert -> {
                     DigitalCertificateDTO dto = new DigitalCertificateDTO(cert);
-                    RevokedCertificate rc = digitalCertificateService.getIfIsRevoked(
+                    RevokedCertificate rc = ocspService.getIfIsRevoked(
                             dto.getSerialNumber().longValue());
                     dto.setRevoked(rc != null);
                     return dto;
@@ -94,7 +98,7 @@ public class PKIController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> checkValidity(@PathVariable Long serialNumber) {
         return new ResponseEntity<>(
-                digitalCertificateService.getIfIsRevoked(serialNumber) != null, HttpStatus.OK);
+                ocspService.getIfIsRevoked(serialNumber) != null, HttpStatus.OK);
     }
 
     @GetMapping("/digital-certificates/{serialNumber}")
@@ -111,7 +115,7 @@ public class PKIController {
             dto.setSerialNumber(dc.getSerialNumber().longValue());
             dto.setKeyUsage(digitalCertificateService.getCertKeyUsage(serialNumber));
 
-            RevokedCertificate rc = digitalCertificateService.getIfIsRevoked(serialNumber);
+            RevokedCertificate rc = ocspService.getIfIsRevoked(serialNumber);
             dto.setRevokeReason(rc != null ? rc.getRevokeReason() : null);
             return new ResponseEntity<>(
                     dto, HttpStatus.OK);
@@ -125,7 +129,7 @@ public class PKIController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> revokeCertificate(@RequestBody @Validated RevokeRequestDTO request) {
         try {
-            digitalCertificateService.revokeCertificate(request);
+            ocspService.revokeCertificate(request);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

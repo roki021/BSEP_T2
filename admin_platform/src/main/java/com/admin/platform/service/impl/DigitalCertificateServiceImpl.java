@@ -4,7 +4,6 @@ import com.admin.platform.config.PlatformKeyStore;
 import com.admin.platform.constants.CryptConstants;
 import com.admin.platform.constants.CsrType;
 import com.admin.platform.constants.TemplateTypes;
-import com.admin.platform.dto.RevokeRequestDTO;
 import com.admin.platform.model.*;
 import com.admin.platform.repository.DigitalCertificateRepository;
 import com.admin.platform.repository.HospitalRepository;
@@ -29,23 +28,18 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import javax.mail.internet.MimeMessage;
-import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
-import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -153,6 +147,16 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     @Override
     public DigitalCertificate getBySerialNumber(BigInteger serialNumber) {
         return digitalCertificateRepository.findBySerialNumber(serialNumber).orElse(null);
+    }
+
+    @Override
+    public X509Certificate getX509BySerialNumber(BigInteger serialNumber) {
+        DigitalCertificate dt = getBySerialNumber(serialNumber);
+        return (X509Certificate)readCertificate(
+                platformKeyStore.getKeyStoreFilePath(),
+                platformKeyStore.getKeyStorePassword(),
+                dt.getAlias()
+        );
     }
 
     public KeyPair generateKeyPair() {
@@ -267,27 +271,6 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
     }
 
     @Override
-    public void revokeCertificate(RevokeRequestDTO request) throws Exception {
-        Optional<DigitalCertificate> cert = digitalCertificateRepository.
-                findBySerialNumber(new BigInteger(request.getCertId().toString()));
-        if (cert.isEmpty()) {
-            throw new Exception("Certificate with this serial number does not exist in this context");
-        }
-
-        revokedCertificateRepository.save(new RevokedCertificate(
-                cert.get().getSerialNumber(),
-                new Timestamp(new Date().getTime()),
-                request.getReason()
-        ));
-    }
-
-    @Override
-    public RevokedCertificate getIfIsRevoked(Long serialNumber) {
-        return revokedCertificateRepository.
-                findBySerialNumber(new BigInteger(serialNumber.toString())).orElse(null);
-    }
-
-    @Override
     public X500Name getSubjectName(Long serialNumber) throws CertificateEncodingException {
         DigitalCertificate dc = getBySerialNumber(new BigInteger(serialNumber.toString()));
         X509Certificate cert = (X509Certificate)readCertificate(platformKeyStore.getKeyStoreFilePath(),
@@ -373,8 +356,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
             ks.load(in, keyStorePass.toCharArray());
 
             if (ks.isKeyEntry(alias)) {
-                PrivateKey pk = (PrivateKey) ks.getKey(alias, pass.toCharArray());
-                return pk;
+                return (PrivateKey) ks.getKey(alias, pass.toCharArray());
             }
         } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException
                 | IOException | UnrecoverableKeyException e) {
@@ -383,6 +365,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
         return null;
     }
 
+    @Override
     public Certificate readCertificate(String keyStoreFile, String keyStorePass, String alias) {
         try {
             KeyStore ks = KeyStore.getInstance("JKS", "SUN");

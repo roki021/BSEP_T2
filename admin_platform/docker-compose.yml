@@ -2,37 +2,32 @@ version: '2'
 services:
   product-server:
     build: .
-    mem_limit: 512m
-    mem_reservation: 128M
     volumes:
       - ./pki/keystore:/etc/ssl/certs/
       - ./pki/truststore:/etc/ssl/trust/
   nginx-product:
     build: nginx
-    mem_limit: 512m
-    mem_reservation: 128M
     volumes:
       - ./pki/keystore:/etc/ssl/certs/
       - ./pki/truststore:/etc/ssl/trust/
     ports:
       - 8080:443
+      - 8088:80
     depends_on:
       - product-server
   # move to hospital_platform?
   hospital-server:
-    mem_limit: 512m
-    mem_reservation: 128M
     build: ../hospital_platform
     volumes:
       - ../hospital_platform/ssl/keystore:/etc/ssl/certs/
       - ../hospital_platform/ssl/truststore:/etc/ssl/trust/
+      - ../hospital_platform/ssl/ocsp:/etc/ssl/ocsp/
   nginx-hospital:
-    mem_limit: 512m
-    mem_reservation: 128M
     build: ../hospital_platform/nginx
     volumes:
       - ../hospital_platform/ssl/keystore:/etc/ssl/certs/
       - ../hospital_platform/ssl/truststore:/etc/ssl/trust/
+      - ../hospital_platform/ssl/ocsp:/etc/ssl/ocsp/
     ports:
       - 8081:443
     depends_on:

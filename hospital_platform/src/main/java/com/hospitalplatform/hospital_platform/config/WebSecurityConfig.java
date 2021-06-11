@@ -62,14 +62,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/external/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/api/certificate").permitAll()
-                .antMatchers("/api/send").permitAll()
-                .anyRequest().authenticated()
-                    .and()
-                    .x509()
-                    .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
-                    .userDetailsService(userDetailsService())
-                    .and()
-            .cors().and()
+                .antMatchers("/api/receive").permitAll()
+                .and().cors().and()
             .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
                         BasicAuthenticationFilter.class);
         http.csrf().disable();
@@ -85,17 +79,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.GET, "/", "/webjars/**", "/*.html", "/favicon.ico", "/**/*.html",
                 "/**/*.css", "/**/*.js");
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return (username -> {
-            System.out.println(username);
-            if (username.equals("device-1")) {
-                return new User(username, "", AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER"));
-            }else{
-                return null;
-            }
-        });
     }
 }

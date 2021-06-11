@@ -19,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -28,6 +26,7 @@ import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
 import java.sql.Timestamp;
+import java.util.Enumeration;
 import java.util.Properties;
 
 @Configuration
@@ -59,11 +58,7 @@ public class PlatformKeyStore {
 
     @Bean(name = "setUpPKI")
     public void setUpPKI() throws Exception {
-//        try {
-            setUpKeyStore();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        setUpKeyStore();
     }
 
     public String getKeyStoreFilePath() {
@@ -79,17 +74,23 @@ public class PlatformKeyStore {
         File f = new File(keyStoreFilePath);
         if (f.exists()) {
             keyStore.load(new FileInputStream(f), keyStorePassword.toCharArray());
-            X509Certificate cert = readRootCert();
-            if(cert != null) {
-                X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
-                RDN cn = x500name.getRDNs(BCStyle.CN)[0];
-                digitalCertificateService.save(new DigitalCertificate(
-                        cert.getSerialNumber(),
-                        new Timestamp(cert.getNotBefore().getTime()),
-                        new Timestamp(cert.getNotAfter().getTime()),
-                        IETFUtils.valueToString(cn.getFirst().getValue()),
-                        CryptConstants.ROOT_ALIAS
-                ));
+            Enumeration<String> aliases = keyStore.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                X509Certificate cert = (X509Certificate)digitalCertificateService.readCertificate(
+                        keyStoreFilePath, keyStorePassword, alias);
+
+                if(cert != null) {
+                    X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
+                    RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+                    digitalCertificateService.save(new DigitalCertificate(
+                            cert.getSerialNumber(),
+                            new Timestamp(cert.getNotBefore().getTime()),
+                            new Timestamp(cert.getNotAfter().getTime()),
+                            IETFUtils.valueToString(cn.getFirst().getValue()),
+                            alias
+                    ));
+                }
             }
         } else {
             keyStore.load(null, keyStorePassword.toCharArray());
@@ -100,7 +101,6 @@ public class PlatformKeyStore {
                     CryptConstants.ROOT_ALIAS, certDirectory);
 
             digitalCertificateService.save(root_cert);
-            System.out.println("Usao");
             keyStore.store(new FileOutputStream(keyStoreFilePath), keyStorePassword.toCharArray());
         }
     }

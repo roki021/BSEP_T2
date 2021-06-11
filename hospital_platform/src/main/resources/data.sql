@@ -23,6 +23,7 @@ INSERT INTO hospital_users_roles (hospital_user_id, role_id) VALUES (0, 0);
 INSERT INTO hospital_users_roles (hospital_user_id, role_id) VALUES (1, 1);
 INSERT INTO hospital_users_roles (hospital_user_id, role_id) VALUES (2, 1);
 
+INSERT INTO users_privileges (user_id, privilege_id) VALUES (0, 1);
 INSERT INTO users_privileges (user_id, privilege_id) VALUES (0, 2);
 INSERT INTO users_privileges (user_id, privilege_id) VALUES (0, 3);
 INSERT INTO users_privileges (user_id, privilege_id) VALUES (0, 4);

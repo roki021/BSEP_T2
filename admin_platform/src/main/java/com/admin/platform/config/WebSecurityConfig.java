@@ -59,6 +59,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/api/external/certificate-signing-requests").permitAll()
                 .antMatchers("/api/certificate-signing-requests/confirm/**").permitAll()
+                .antMatchers("/ocsp/**").permitAll()
             .anyRequest().authenticated().and()
             .cors().and()
             .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),

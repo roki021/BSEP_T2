@@ -14,6 +14,7 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -29,6 +30,8 @@ public interface DigitalCertificateService {
 
     DigitalCertificate getBySerialNumber(BigInteger serialNumber);
 
+    X509Certificate getX509BySerialNumber(BigInteger serialNumber);
+
     KeyPair generateKeyPair();
 
     IssuerData generateIssuerData(PrivateKey issuerKey, X500Name name);
@@ -39,11 +42,9 @@ public interface DigitalCertificateService {
 
     void writeCertificateToFile(KeyStore keyStore, String certName, String alias, String saveDirectory) throws Exception;
 
-    void revokeCertificate(RevokeRequestDTO request) throws Exception;
-
-    RevokedCertificate getIfIsRevoked(Long serialNumber);
-
     X500Name getSubjectName(Long serialNumber) throws CertificateEncodingException;
 
     List<String> getCertKeyUsage(Long serialNumber);
+
+    Certificate readCertificate(String keyStoreFile, String keyStorePass, String alias);
 }
