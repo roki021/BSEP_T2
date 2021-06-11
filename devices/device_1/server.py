@@ -4,7 +4,6 @@ import sys
 import requests
 from werkzeug import serving
 from flask import Flask
-from OpenSSL import SSL
 from os import path
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -12,16 +11,17 @@ from cryptography.hazmat.backends import default_backend as crypto_default_backe
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
+from request import send_request
+from dotenv import dotenv_values
 
-VERIFY_USER = True
-
-API_HOST = "0.0.0.0"
-API_PORT = 5000
-API_CRT = "keystore/device.crt"
-API_KEY = "keystore/device.key"
-API_CA_T = "truststore/client.crt"
-
-app = Flask(__name__)
+config = dotenv_values(".env")
+VERIFY_USER=bool(config["VERIFY_USER"])
+API_HOST=config["API_HOST"]
+API_PORT=int(config["API_PORT"])
+API_CRT=config["API_CRT"]
+API_KEY=config["API_KEY"]
+API_CA_T=config["API_CA_T"]
+# openssl s_client -connect localhost:5001 -status
 
 
 def generateKeys():
@@ -71,6 +71,16 @@ def check_if_cert_present():
     return path.exists(API_KEY) and path.exists(API_CRT) and path.exists(API_CA_T)
 
 
+def send_message():
+    try:
+        send_request('localhost', 8081, '/api/receive', 'POST', 'test', API_CRT, API_KEY, API_CA_T)
+    except Exception as ex:
+        print(ex)
+
+
+app = Flask(__name__)
+
+
 @app.route('/csr',  methods=['POST'])
 def send_public_key():
     json_data = flask.request.json
@@ -99,3 +109,4 @@ if __name__ == '__main__':
 
     serving.run_simple(
         API_HOST, API_PORT, app, ssl_context=context)
+    
