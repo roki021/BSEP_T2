@@ -28,7 +28,7 @@ public class LogMessageParser {
         System.out.println(logLine);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(
-                "\\[(INFO|WARNING|ERROR)\\] ([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}) -");
+                "\\[(INFO|WARNING|ERROR|SUCCESS)\\] ([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}) ([0-9\\/a-zA-Z]+) ([0-9a-zA-Z]+) -");
 
         for (String field : fieldsRegex.keySet()) {
             String regex = fieldsRegex.get(field);
@@ -61,9 +61,15 @@ public class LogMessageParser {
         ZoneId zoneId = ZoneId.systemDefault();
         res.put("time", datetime.atZone(zoneId).toEpochSecond());
 
+        String source = matcher.group(8);
+        String identifier = matcher.group(9);
+
+        res.put("source", source);
+        res.put("identifier", identifier);
+
         Object[] keys = fieldsRegex.keySet().toArray();
-        for (int i = 8; i < 8 + keys.length; i++)
-            res.put(keys[i - 8].toString(), matcher.group(i));
+        for (int i = 10; i < 10 + keys.length; i++)
+            res.put(keys[i - 10].toString(), matcher.group(i));
 
         return res;
     }
