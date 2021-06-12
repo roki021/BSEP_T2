@@ -3,10 +3,12 @@ package com.hospitalplatform.hospital_platform;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
 
 @SpringBootApplication
+@EnableScheduling
 public class HospitalPlatformApplication {
 
 	/*@Value("${server.ssl.key-store-password}")
