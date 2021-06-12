@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+
 @RestController
 @RequestMapping("/api/external/members")
 public class HospitalMemberController {
@@ -21,11 +23,19 @@ public class HospitalMemberController {
 
     @PostMapping
     public ResponseEntity<?> createMember(@RequestHeader("X-sudo-key") String key,
-                                          @RequestBody @Validated NewMemberDTO member) throws Exception {System.out.println(key);
+                                          @RequestBody @Validated NewMemberDTO member) throws Exception {
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        try {
+            hospitalUserService.createUser(member);
+        } catch (Exception e) {
+            e.printStackTrace();
+            HashMap<String, String> message = new HashMap<>() {{
+                put("error", e.getMessage());
+            }};
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        }
 
-        hospitalUserService.createUser(member);
         return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }
 
