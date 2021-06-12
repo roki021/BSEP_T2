@@ -9,10 +9,15 @@ import org.springframework.stereotype.Component;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.ArrayList;
 
-//@Component
-//@Order(Ordered.HIGHEST_PRECEDENCE)
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class XSSFilter implements Filter {
+
+    private static final ArrayList<String> permitted = new ArrayList<>() {{
+        add("/api/device/receive");
+    }};
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
@@ -20,10 +25,14 @@ public class XSSFilter implements Filter {
         XSSRequestWrapper wrappedRequest =
                new XSSRequestWrapper((HttpServletRequest) request);
         String body = IOUtils.toString(wrappedRequest.getReader());
-        if (!StringUtils.isBlank(body)) {
-            body = XSSUtils.stripXSS(body);
-            wrappedRequest.resetInputStream(body.getBytes());
+        String path = ((HttpServletRequest) request).getServletPath();
+        if(!permitted.contains(path)) {
+            if (!StringUtils.isBlank(body)) {
+                body = XSSUtils.stripXSS(body);
+                wrappedRequest.resetInputStream(body.getBytes());
+            }
         }
+
         chain.doFilter(wrappedRequest, response);
     }
 

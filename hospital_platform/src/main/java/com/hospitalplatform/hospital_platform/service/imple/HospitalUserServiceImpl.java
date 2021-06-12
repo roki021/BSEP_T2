@@ -12,6 +12,9 @@ import com.hospitalplatform.hospital_platform.repository.PrivilegeRepository;
 import com.hospitalplatform.hospital_platform.repository.RoleRepository;
 import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +23,7 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,9 +42,10 @@ public class HospitalUserServiceImpl implements HospitalUserService {
 
     public HospitalUserServiceImpl() throws IOException {
         this.passwordBlacklist = new HashSet<>();
-
-        File file = ResourceUtils.getFile("classpath:password_blacklist.txt");
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        InputStream resource = new ClassPathResource(
+                "password_blacklist.txt").getInputStream();
+        BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(resource, StandardCharsets.UTF_8));
         String password;
         while ((password = bufferedReader.readLine()) != null)
             passwordBlacklist.add(password);
