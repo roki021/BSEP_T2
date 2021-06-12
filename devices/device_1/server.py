@@ -1,10 +1,13 @@
 import flask
 import ssl
 import sys
-import requests
+import atexit
+import random
+from apscheduler.schedulers.background import BackgroundScheduler
 from werkzeug import serving
 from flask import Flask
 from os import path
+from datetime import datetime
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
@@ -12,7 +15,10 @@ from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
 from request import send_request
+from ocsp_check import is_cert_revoked
 from dotenv import dotenv_values
+from measures import Scale, pulse_state_machine, pressure_low_state_machine, pressure_high_state_machine, temp_state_machine
+
 
 config = dotenv_values(".env")
 VERIFY_USER=bool(config["VERIFY_USER"])
@@ -21,8 +27,18 @@ API_PORT=int(config["API_PORT"])
 API_CRT=config["API_CRT"]
 API_KEY=config["API_KEY"]
 API_CA_T=config["API_CA_T"]
+OCSP_RESPONDER=config["OCSP_RESPONDER"]
+HOSPITAL_HOST=config["HOSPITAL_HOST"]
+HOSPITAL_PORT=int(config["HOSPITAL_PORT"])
+ENDPOINT=config["ENDPOINT"]
+MESSAGE_FORMAT=config["MESSAGE_FORMAT"]
+NAME=config["NAME"]
 # openssl s_client -connect localhost:5001 -status
+ocsp_revoked = False
 
+PULSE_STATE = Scale.MEDIUM
+PRESSURE_STATE = Scale.MEDIUM
+TEMP_STATE = Scale.MEDIUM
 
 def generateKeys():
     return rsa.generate_private_key(
@@ -71,9 +87,54 @@ def check_if_cert_present():
     return path.exists(API_KEY) and path.exists(API_CRT) and path.exists(API_CA_T)
 
 
-def send_message():
+def message_generator(pulse_state, pressure_state, temp_state):
+    now = datetime.now()
+
+    P = pulse_state_machine(pulse_state)
+    UBP = pressure_high_state_machine(pulse_state)
+    LBP = pressure_low_state_machine(pulse_state)
+    BT = temp_state_machine(pulse_state)
+    params = f"IP {API_HOST} P {P} UBP {UBP} LBP {LBP} BT {BT}"
+    return MESSAGE_FORMAT.format(
+        now.strftime("%Y-%m-%d %H:%M:%S"),
+        NAME,
+        params,
+        ""
+    )
+
+
+def monitoring():
+    msg = message_generator(PULSE_STATE, PRESSURE_STATE, TEMP_STATE)
+    if not ocsp_revoked:
+        send_message(msg)
+
+
+def change_states():
+    global PULSE_STATE, PRESSURE_STATE, TEMP_STATE
+    PULSE_STATE = Scale(random.randint(Scale.ZERO.value, Scale.HIGH.value))
+    PRESSURE_STATE = Scale(random.randint(Scale.LOW.value, Scale.HIGH.value))
+    TEMP_STATE = Scale(random.randint(Scale.LOW.value, Scale.HIGH.value))
+    print(PULSE_STATE, PRESSURE_STATE, TEMP_STATE)
+
+
+def check_ocsp():
+    global ocsp_revoked
     try:
-        send_request('localhost', 8081, '/api/receive', 'POST', 'test', API_CRT, API_KEY, API_CA_T)
+        cert = None
+        issuer_cert = None
+        with open(API_CRT, 'r') as cert_file:
+            cert = x509.load_pem_x509_certificate(bytes(cert_file.read(), encoding='ascii'))
+
+        with open(API_CA_T, 'r') as cert_file:
+            issuer_cert = x509.load_pem_x509_certificate(bytes(cert_file.read(), encoding='ascii'))
+        ocsp_revoked = is_cert_revoked(OCSP_RESPONDER, cert, issuer_cert)
+    except Exception as ex:
+        print(ex)
+
+
+def send_message(message):
+    try:
+        send_request(HOSPITAL_HOST, HOSPITAL_PORT, ENDPOINT, 'POST', message, API_CRT, API_KEY, API_CA_T)
     except Exception as ex:
         print(ex)
 
@@ -102,6 +163,14 @@ if __name__ == '__main__':
             context.load_verify_locations(API_CA_T)
         try:
             context.load_cert_chain(API_CRT, API_KEY)
+
+            scheduler = BackgroundScheduler()
+            scheduler.add_job(func=monitoring, trigger="cron", second='*/5')
+            scheduler.add_job(func=check_ocsp, trigger="cron",  minute='*/1', second='30')
+            scheduler.add_job(func=change_states, trigger="cron", minute='*/2')
+            scheduler.start()
+
+            atexit.register(lambda: scheduler.shutdown())
         except Exception as e:
             sys.exit("Error starting flask server. " +
                 "Missing cert or key. Details: {}"

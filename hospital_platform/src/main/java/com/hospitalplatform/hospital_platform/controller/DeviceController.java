@@ -45,4 +45,10 @@ public class DeviceController {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
     }
+
+    @PostMapping("/receive")
+    public ResponseEntity<?> receiveMessage(@RequestBody String message) {
+        System.out.println(message);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

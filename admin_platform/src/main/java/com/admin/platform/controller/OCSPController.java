@@ -1,7 +1,6 @@
 package com.admin.platform.controller;
 
 import com.admin.platform.service.OCSPService;
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,22 +15,6 @@ public class OCSPController {
 
     @Autowired
     private OCSPService ocspService;
-
-    @GetMapping("/{part1}/{part2}")
-    public ResponseEntity<byte[]> checkIfCertificateIsRevoked(@PathVariable String part1,
-                                                              @PathVariable String part2) throws Exception {
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Content-Type", "application/ocsp-response");
-        try {
-            byte[] encodedResp = ocspService.getEncodedOCSPResponse
-                    (Base64.decodeBase64(part1 + "/" + part2));
-
-            responseHeaders.set("Content-Length", encodedResp.length + "");
-            return new ResponseEntity<>(encodedResp, responseHeaders, HttpStatus.OK);
-        } catch(IOException exception) {
-            return new ResponseEntity<>(responseHeaders, HttpStatus.BAD_REQUEST);
-        }
-    }
 
     @PostMapping
     public ResponseEntity<byte[]> checkIfCertificateIsRevoked(@RequestBody byte[] request) throws Exception {
