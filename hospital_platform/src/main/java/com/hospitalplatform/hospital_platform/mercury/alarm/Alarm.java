@@ -66,7 +66,7 @@ public class Alarm extends BasicRule {
             HashMap<String, Trigger> triggers,
             int activationThreshold,
             Long factWait) {
-        this(name, alarmMessage, alarmCallback, activationTags, triggers, 1, Long.MAX_VALUE, null, null);
+        this(name, alarmMessage, alarmCallback, activationTags, triggers, activationThreshold, factWait, null, null);
     }
 
     public Alarm(
@@ -126,8 +126,9 @@ public class Alarm extends BasicRule {
 
     public String message() {
         List<String> newList = new ArrayList<>();
-        for (String key : this.triggerNames)
-            newList.add(this.triggers.get(key).getValue().toString());
+        if (this.triggerNames != null)
+            for (String key : this.triggerNames)
+                newList.add(this.triggers.get(key).getValue().toString());
 
         if (this.messageTracker != null)
             newList.add(this.lastMessageKey);

@@ -12,7 +12,7 @@ public class Counter {
     }
 
     public void update(Long time) {
-        if (time - this.lastTime < this.wait)
+        if (time - this.lastTime <= this.wait)
             this.counter++;
         else
             this.counter = 1;

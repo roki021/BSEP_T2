@@ -8,6 +8,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class NewMemberDTO {
     private String role;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private List<Privilege> privileges;
 
     public String getFirstName() {

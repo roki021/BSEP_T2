@@ -9,11 +9,12 @@ i = 0
 with open(log_path, 'a+') as f:
     while True:
         dtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        status = 'ERROR'
+        status = random.choice(['WARN'] * 5 + ['SUCCESS'] + ['ERROR'] * 30)
         fields = {
-            'username': 'jovan',
+            'username': random.choice(['jovan', 'boja', 'zoran', 'milan', 'marko']),
             'ip': random.choice(['127.0.0.2', '127.0.0.1', '127.0.0.3', '127.0.0.7', '127.0.0.5', '127.0.7.2'])
         }
-        f.write('[{}] {} - username {} ip {}\n'.format(status, dtime, fields['username'], fields['ip']))
+        f.write('[{}] {} {} {} - username {} ip {}\n'.format(
+            status, dtime, 'api/login', 'ID', fields['username'], fields['ip']))
         f.flush()
-        time.sleep(5)
+        time.sleep(.5)

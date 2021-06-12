@@ -23,6 +23,10 @@ import java.util.Optional;
 public class MercuryConfig {
     public static String LOGIN_ALARM = "LOGIN_ALARM";
     public static String IP_BLACKLIST_ALARM = "IP_BLACKLIST_ALARM";
+    public static String LONG_NO_ACTIVE_ALARM = "LONG_NO_ACTIVE_ALARM";
+    public static String ERROR_ALARM = "ERROR_ALARM";
+    public static String DOS_ALARM = "DOS_ALARM";
+
 
     @Autowired
     private AlarmRepository alarmRepository;
@@ -33,6 +37,63 @@ public class MercuryConfig {
 
         Optional<Alarm> loginAlarmOptional = this.alarmRepository.findByName(LOGIN_ALARM);
         Optional<Alarm> ipBlackListAlarmOptional = this.alarmRepository.findByName(IP_BLACKLIST_ALARM);
+        Optional<Alarm> longNoActiveAlarmOptional = this.alarmRepository.findByName(LONG_NO_ACTIVE_ALARM);
+        Optional<Alarm> errorAlarmOptional = this.alarmRepository.findByName(ERROR_ALARM);
+        Optional<Alarm> dosAlarmOptional = this.alarmRepository.findByName(DOS_ALARM);
+
+        if (dosAlarmOptional.isEmpty()) {
+            // security, dos alarm
+            Alarm dosAlarm = new Alarm(
+                    MercuryConfig.DOS_ALARM,
+                    "System is under DoS attack.",
+                    (alarm) -> {
+                        System.out.println(alarm.message());
+                    },
+                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
+                    new LinkedHashMap<>() {{
+                        put("status", new Trigger(Relation.CONTAINS, "SUCCESS,ERROR,INFO,WARN"));
+                    }},
+                    60, 1L);
+            this.alarmRepository.save(dosAlarm);
+            messageBroker.addAlarm(dosAlarm);
+        } else
+            messageBroker.addAlarm(dosAlarmOptional.get());
+
+        if (errorAlarmOptional.isEmpty()) {
+            // security, detect any error in the system
+            Alarm errorAlarm = new Alarm(
+                    MercuryConfig.ERROR_ALARM,
+                    "Error pops up!",
+                    (alarm) -> {
+                        System.out.println(alarm.message());
+                    },
+                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
+                    new LinkedHashMap<>() {{
+                        put("status", new Trigger(Relation.EQ, "ERROR"));
+                    }},
+                    1, Long.MAX_VALUE);
+            this.alarmRepository.save(errorAlarm);
+            messageBroker.addAlarm(errorAlarm);
+        } else
+            messageBroker.addAlarm(errorAlarmOptional.get());
+
+        if (longNoActiveAlarmOptional.isEmpty()) {
+            // security alarm
+            Alarm longNoActiveAlarm = new Alarm(
+                    MercuryConfig.LONG_NO_ACTIVE_ALARM,
+                    "User active again after 90 days. (username %s)",
+                    (alarm) -> {
+                        System.out.println(alarm.message());
+                    },
+                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
+                    new LinkedHashMap<>() {{
+                        put("status", new Trigger(Relation.EQ, "SUCCESS")); //TODO: id = active??
+                    }},
+                    1, 10L, "username"); //TODO: fact wait 90 days!
+            this.alarmRepository.save(longNoActiveAlarm);
+            messageBroker.addAlarm(longNoActiveAlarm);
+        } else
+            messageBroker.addAlarm(loginAlarmOptional.get());
 
         if (loginAlarmOptional.isEmpty()) {
             // security alarms
@@ -44,7 +105,7 @@ public class MercuryConfig {
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("status", new Trigger(Relation.EQ, "ERROR"));
+                        put("status", new Trigger(Relation.EQ, "WARN"));
                     }},
                     3, 3600L, "username");
             this.alarmRepository.save(loginAlarm);
@@ -69,7 +130,6 @@ public class MercuryConfig {
             messageBroker.addAlarm(ipBlackListAlarm);
         } else
             messageBroker.addAlarm(ipBlackListAlarmOptional.get());
-
 
         return messageBroker;
     }

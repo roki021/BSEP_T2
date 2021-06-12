@@ -44,16 +44,27 @@ public class AuthController {
             HttpServletRequest request) {
         UserTokenStateDTO token = authService.loginUser(loginDTO);
 
+        //TODO move to the better place
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (token == null) {
-            //TODO move to the better place
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             logger.writeMessage(
-                    String.format("[ERROR] %s - username %s ip %s",
+                    String.format("[WARN] %s %s %s- username %s ip %s",
                             simpleDateFormat.format(new Date()),
                             loginDTO.getUsername(),
-                            request.getRemoteAddr()));
+                            request.getRemoteAddr(),
+                            "api/login",
+                            "ID"));
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
+
+        logger.writeMessage(
+                String.format("[SUCCESS] %s %s %s- username %s ip %s",
+                        simpleDateFormat.format(new Date()),
+                        loginDTO.getUsername(),
+                        request.getRemoteAddr(),
+                        "api/login",
+                        "ID"));
+
 
         return ResponseEntity.ok(token);
     }

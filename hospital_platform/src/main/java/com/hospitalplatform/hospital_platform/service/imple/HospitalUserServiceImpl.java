@@ -16,8 +16,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 import org.springframework.validation.annotation.Validated;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,18 @@ public class HospitalUserServiceImpl implements HospitalUserService {
     @Autowired
     private PrivilegeRepository privilegeRepository;
 
+    private Set<String> passwordBlacklist;
+
+    public HospitalUserServiceImpl() throws IOException {
+        this.passwordBlacklist = new HashSet<>();
+
+        File file = ResourceUtils.getFile("classpath:password_blacklist.txt");
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        String password;
+        while ((password = bufferedReader.readLine()) != null)
+            passwordBlacklist.add(password);
+    }
+
     @Override
     public HospitalUser getUser(String username) {
         return repository.findByUsername(username);
@@ -39,6 +53,10 @@ public class HospitalUserServiceImpl implements HospitalUserService {
 
     @Override
     public void createUser(NewMemberDTO member) throws Exception {
+        // check password!
+        if (this.passwordBlacklist.contains(member.getPassword().toLowerCase()))
+            throw  new Exception("Cannot use blacklisted password.");
+
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); //TODO: autowired doesn't work for some reason
         List<Role> roles = new ArrayList<>();
         Set<Privilege> privilegeSet = new HashSet<>();
