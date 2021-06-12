@@ -4,15 +4,21 @@ import com.hospitalplatform.hospital_platform.mercury.alarm.constants.Activation
 import com.hospitalplatform.hospital_platform.mercury.logger.Logger;
 import com.hospitalplatform.hospital_platform.mercury.message.Message;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.LinkedHashMap;
 
 public class LogSimulatorLogger extends Logger {
+    private File crunchifyFile = null;
+    private long lastKnownPosition = 0L;
+    private long crunchifyCounter = 0L;
+
 
     public LogSimulatorLogger(int readPeriod, String logPath, LinkedHashMap<String, String> fieldsRegex) {
         super(readPeriod, logPath, fieldsRegex);
+        this.crunchifyFile = new File(logPath);
     }
 
     @Override
@@ -24,46 +30,25 @@ public class LogSimulatorLogger extends Logger {
         super.broker.writeMessage(msg);
     }
 
-    private Long lastKnownPosition = 0L;
-    private Long crunchifyCounter = 0L;
-
     @Override
     public void readLog() {
-        RandomAccessFile readWriteFileAccess = null;
         try {
-            readWriteFileAccess = new RandomAccessFile(this.logPath, "r");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            readWriteFileAccess.seek(lastKnownPosition);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String crunchifyLine = null;
-        while (true) {
-            try {
-                if (!((crunchifyLine = readWriteFileAccess.readLine()) != null)) break;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                long fileLength = crunchifyFile.length();
+                if (fileLength > lastKnownPosition) {
 
-            System.out.println(crunchifyLine);
-            //TODO
-            //for (String line : crunchifyLine.split("\\n"))
-            //    this.writeMessage(line);
-
-            crunchifyCounter++;
-        }
-        try {
-            lastKnownPosition = readWriteFileAccess.getFilePointer();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            readWriteFileAccess.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+                    // Reading and writing file
+                    RandomAccessFile readWriteFileAccess = new RandomAccessFile(crunchifyFile, "rw");
+                    readWriteFileAccess.seek(lastKnownPosition);
+                    String crunchifyLine = null;
+                    while ((crunchifyLine = readWriteFileAccess.readLine()) != null) {
+                        if (!crunchifyLine.contains("\\n"))
+                            this.writeMessage(crunchifyLine.strip());
+                        crunchifyCounter++;
+                    }
+                    lastKnownPosition = readWriteFileAccess.getFilePointer();
+                    readWriteFileAccess.close();
+                }
+        } catch (Exception ignored) {
         }
     }
 }

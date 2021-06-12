@@ -74,12 +74,6 @@ public class MercuryConfig {
         return messageBroker;
     }
 
-    @Bean
-    public LoggerDemonService createLoggerDemonServiceInstance() {
-        MessageBroker broker = this.createMessageBrokerInstance();
-        return new LoggerDemonServiceImpl(broker);
-    }
-
     @Bean(name = "authLogger")
     public Logger createAuthLoggerInstance() {
         AuthLogger authLogger = new AuthLogger(new LinkedHashMap<>() {{

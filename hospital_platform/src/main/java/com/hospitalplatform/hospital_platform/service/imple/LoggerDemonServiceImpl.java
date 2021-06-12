@@ -27,8 +27,8 @@ public class LoggerDemonServiceImpl implements LoggerDemonService {
         this.threadPoolTaskScheduler.initialize();
 
         this.addLogger(new LogSimulatorLogger(
-                3,
-                "C:\\Users\\Zdravko\\Documents\\Lab\\BSEP_T2\\logger\\log1.txt",
+                1,
+                "..\\logger\\log1.txt",
                 new LinkedHashMap<>() {{
                     put("username", "[a-zA-Z0-9]{3,50}");
                     put("ip", "[0-9.:]+");

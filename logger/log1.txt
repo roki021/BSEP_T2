@@ -1,7 +1,0 @@
-[ERROR] 2021-06-12 09:11:37 - username jovan ip 127.0.0.7
-[ERROR] 2021-06-12 09:11:42 - username jovan ip 127.0.7.2
-[ERROR] 2021-06-12 09:11:47 - username jovan ip 127.0.0.5
-[ERROR] 2021-06-12 09:11:52 - username jovan ip 127.0.7.2
-[ERROR] 2021-06-12 09:11:57 - username jovan ip 127.0.0.7
-[ERROR] 2021-06-12 09:12:02 - username jovan ip 127.0.0.3
-[ERROR] 2021-06-12 09:12:07 - username jovan ip 127.0.7.2
