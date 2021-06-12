@@ -16,4 +16,4 @@ with open(log_path, 'a+') as f:
         }
         f.write('[{}] {} - username {} ip {}\n'.format(status, dtime, fields['username'], fields['ip']))
         f.flush()
-        time.sleep(1)
+        time.sleep(5)
