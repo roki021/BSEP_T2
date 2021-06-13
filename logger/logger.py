@@ -8,7 +8,7 @@ i = 0
 
 with open(log_path, 'a+') as f:
     while True:
-        dtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        dtime = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         status = random.choice(['WARN'] * 5 + ['SUCCESS'] + ['ERROR'] * 30)
         fields = {
             'username': random.choice(['jovan', 'boja', 'zoran', 'milan', 'marko']),
