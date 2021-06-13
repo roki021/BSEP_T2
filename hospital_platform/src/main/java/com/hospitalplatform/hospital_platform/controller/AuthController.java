@@ -7,6 +7,7 @@ import com.hospitalplatform.hospital_platform.mercury.logger.impl.LogSimulatorLo
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
 import com.hospitalplatform.hospital_platform.service.AuthService;
 import com.hospitalplatform.hospital_platform.service.CertificateService;
+import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import com.hospitalplatform.hospital_platform.service.LoggerDemonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,6 +35,9 @@ public class AuthController {
     private AuthService authService;
 
     @Autowired
+    private HospitalUserService hospitalUserService;
+
+    @Autowired
     @Qualifier("authLogger")
     private Logger logger;
 
@@ -42,26 +46,39 @@ public class AuthController {
             @RequestBody @Validated LoginDTO loginDTO,
             HttpServletResponse response,
             HttpServletRequest request) {
-        UserTokenStateDTO token = authService.loginUser(loginDTO);
-
-        //TODO move to the better place
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        if (token == null) {
+
+        // quick
+        if (hospitalUserService.isUserLocked(loginDTO.getUsername())) {
             logger.writeMessage(
-                    String.format("[WARNING] %s %s %s - username %s ip %s",
+                    String.format("[INFO] %s %s %s - username %s ip %s",
                             simpleDateFormat.format(new Date()),
                             "api/login",
-                            "ID",
+                            "LOGINLOCKED",
                             loginDTO.getUsername(),
                             request.getRemoteAddr()));
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
 
+        UserTokenStateDTO token = authService.loginUser(loginDTO);
+
+        if (token == null) {
+            logger.writeMessage(
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
+                            simpleDateFormat.format(new Date()),
+                            "api/login",
+                            "LOGINFAIL",
+                            loginDTO.getUsername(),
+                            request.getRemoteAddr()));
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
+        hospitalUserService.updateLastAccess(loginDTO.getUsername());
         logger.writeMessage(
                 String.format("[SUCCESS] %s %s %s - username %s ip %s",
                         simpleDateFormat.format(new Date()),
                         "api/login",
-                        "ID",
+                        "LOGINSUCCESS",
                         loginDTO.getUsername(),
                         request.getRemoteAddr()));
 

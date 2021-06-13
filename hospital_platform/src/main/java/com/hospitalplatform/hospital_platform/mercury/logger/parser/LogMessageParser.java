@@ -28,7 +28,7 @@ public class LogMessageParser {
         System.out.println(logLine);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(
-                "\\[(INFO|WARNING|ERROR|SUCCESS)\\] ([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}) ([0-9\\/a-zA-Z]+) ([0-9a-zA-Z]+) -");
+                "\\[(INFO|WARNING|ERROR|SUCCESS|SALIENT)\\] ([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}) ([0-9\\/a-zA-Z]+) ([0-9a-zA-Z]+) -");
 
         for (String field : fieldsRegex.keySet()) {
             String regex = fieldsRegex.get(field);

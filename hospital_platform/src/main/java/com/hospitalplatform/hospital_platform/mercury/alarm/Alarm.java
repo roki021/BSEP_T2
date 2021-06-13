@@ -51,6 +51,9 @@ public class Alarm extends BasicRule {
     @Transient
     private AlarmCallback callback; //TODO: if null just write to NoSQL?!
 
+    @Transient
+    private Long messagesDiff;
+
     public Alarm() {
     }
 
@@ -118,6 +121,13 @@ public class Alarm extends BasicRule {
 
     @Override
     public void execute(Facts facts) {
+        Message message = (Message) facts.get("log");
+        if (message.getField("status").toString().equals("SALIENT"))
+            return;
+
+        this.historian.resetCount(this.lastMessageKey);
+        this.messagesDiff = this.historian.getActivationDiff(this.lastMessageKey);
+
         if (this.callback != null)
             this.callback.execute(this);
         else
@@ -133,5 +143,13 @@ public class Alarm extends BasicRule {
         if (this.messageTracker != null)
             newList.add(this.lastMessageKey);
         return String.format(this.alarmMessage, newList.toArray());
+    }
+
+    public String getTrackingKey() {
+        return this.lastMessageKey;
+    }
+
+    public Long getMessagesDiff() {
+        return messagesDiff;
     }
 }

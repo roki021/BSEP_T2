@@ -9,7 +9,7 @@ import javax.persistence.*;
 public class Trigger {
     @Id
     @GeneratedValue
-    private int id;
+    private Long id;
 
     @Column
     private Double minValue;
@@ -23,6 +23,34 @@ public class Trigger {
     @Column
     private Relation relation;
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Double getMinValue() {
+        return minValue;
+    }
+
+    public void setMinValue(Double minValue) {
+        this.minValue = minValue;
+    }
+
+    public Double getMaxValue() {
+        return maxValue;
+    }
+
+    public void setMaxValue(Double maxValue) {
+        this.maxValue = maxValue;
+    }
+
+    public Relation getRelation() {
+        return relation;
+    }
+
+    public void setRelation(Relation relation) {
+        this.relation = relation;
+    }
+
     public Trigger() {
     }
 
@@ -32,6 +60,12 @@ public class Trigger {
     }
 
     public Trigger(Relation relation, String value) {
+        this.value = value;
+        this.relation = relation;
+    }
+
+    public Trigger(Long id, Relation relation, String value) {
+        this.id = id;
         this.value = value;
         this.relation = relation;
     }
@@ -69,27 +103,17 @@ public class Trigger {
                     throw new Exception("Invalid relation for two Strings.");
             }
         }
-        /*
-        if (value instanceof Number) {
-            Double val = Double.valueOf(value.toString());
-            if (this.relation == Relation.EQ)
-                return val.equals(this.value);
-            else if (this.relation == Relation.LT)
-                return val < (Double)this.value;
-            else if (this.relation == Relation.GT)
-                return val > (Double)this.value;
-            else
-                return val >= this.minValue && val <= this.maxValue;
-        } else if (value instanceof String) {
-            if (!relation.equals(Relation.EQ))
-                return false;
-            return value.toString().equals(this.value.toString());
-        }
-
-        return false;*/
     }
 
     public Object getValue() {
         return value;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }

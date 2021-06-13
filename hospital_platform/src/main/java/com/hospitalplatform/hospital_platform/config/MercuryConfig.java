@@ -8,7 +8,9 @@ import com.hospitalplatform.hospital_platform.mercury.logger.Logger;
 import com.hospitalplatform.hospital_platform.mercury.logger.impl.AuthLogger;
 import com.hospitalplatform.hospital_platform.mercury.logger.impl.LogSimulatorLogger;
 import com.hospitalplatform.hospital_platform.mercury.message.MessageBroker;
+import com.hospitalplatform.hospital_platform.models.HospitalUser;
 import com.hospitalplatform.hospital_platform.repository.AlarmRepository;
+import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import com.hospitalplatform.hospital_platform.service.LoggerDemonService;
 import com.hospitalplatform.hospital_platform.service.imple.LoggerDemonServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 
@@ -27,9 +31,11 @@ public class MercuryConfig {
     public static String ERROR_ALARM = "ERROR_ALARM";
     public static String DOS_ALARM = "DOS_ALARM";
 
-
     @Autowired
     private AlarmRepository alarmRepository;
+
+    @Autowired
+    private HospitalUserService hospitalUserService;
 
     @Bean
     public MessageBroker createMessageBrokerInstance() {
@@ -81,15 +87,17 @@ public class MercuryConfig {
             // security alarm
             Alarm longNoActiveAlarm = new Alarm(
                     MercuryConfig.LONG_NO_ACTIVE_ALARM,
-                    "User active again after 90 days. (username %s)",
+                    "User active again after \"90 days\". (username %s)",
                     (alarm) -> {
+                        if (alarm.getMessagesDiff() > 20L)
                         System.out.println(alarm.message());
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("status", new Trigger(Relation.EQ, "SUCCESS")); //TODO: id = active??
+                        put("status", new Trigger(Relation.CONTAINS, "SUCCESS,SALIENT"));
+                        put("identifier", new Trigger(Relation.CONTAINS, "LASTACTIVE,LOGINSUCCESS"));
                     }},
-                    1, 10L, "username"); //TODO: fact wait 90 days!
+                    1, Long.MAX_VALUE, "username");
             this.alarmRepository.save(longNoActiveAlarm);
             messageBroker.addAlarm(longNoActiveAlarm);
         } else
@@ -102,6 +110,7 @@ public class MercuryConfig {
                     "User is failing to login for many times. (username %s)",
                     (alarm) -> {
                         System.out.println(alarm.message());
+                        hospitalUserService.lockUser(alarm.getTrackingKey());
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
@@ -141,6 +150,28 @@ public class MercuryConfig {
             put("ip", "[0-9.:]+");
         }});
         authLogger.subscribeBroker(this.createMessageBrokerInstance());
+
         return authLogger;
+    }
+
+    @Bean(name = "authSysLogger")
+    public Logger createAuthSysLoggerInstance() {
+        AuthLogger logger = new AuthLogger(new LinkedHashMap<>() {{
+            put("username", "[a-zA-Z0-9]{3,50}");
+        }});
+        logger.subscribeBroker(this.createMessageBrokerInstance());
+
+        // inform about activity
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        for (HospitalUser user : hospitalUserService.getHospitalUsersModels()) {
+            logger.writeMessage(
+                    String.format("[SALIENT] %s %s %s - username %s",
+                            simpleDateFormat.format(new Date()),
+                            "system",
+                            "LASTACTIVE",
+                            user.getUsername()));
+        }
+
+        return logger;
     }
 }
