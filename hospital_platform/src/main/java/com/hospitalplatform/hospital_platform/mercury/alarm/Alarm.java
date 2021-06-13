@@ -33,7 +33,7 @@ public class Alarm extends BasicRule {
     private String messageTracker;
 
     @MapKey(name = "id")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true ,  mappedBy = "id")
+    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true ,  mappedBy = "id")
     private Map<String, Trigger> triggers;
 
     @Transient

@@ -5,10 +5,7 @@ import com.hospitalplatform.hospital_platform.dto.UserTokenStateDTO;
 import com.hospitalplatform.hospital_platform.mercury.logger.Logger;
 import com.hospitalplatform.hospital_platform.mercury.logger.impl.LogSimulatorLogger;
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
-import com.hospitalplatform.hospital_platform.service.AuthService;
-import com.hospitalplatform.hospital_platform.service.CertificateService;
-import com.hospitalplatform.hospital_platform.service.HospitalUserService;
-import com.hospitalplatform.hospital_platform.service.LoggerDemonService;
+import com.hospitalplatform.hospital_platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -36,6 +33,9 @@ public class AuthController {
 
     @Autowired
     private HospitalUserService hospitalUserService;
+
+    @Autowired
+    private BlacklistService blacklistService;
 
     @Autowired
     @Qualifier("authLogger")
@@ -81,7 +81,6 @@ public class AuthController {
                         "LOGINSUCCESS",
                         loginDTO.getUsername(),
                         request.getRemoteAddr()));
-
 
         return ResponseEntity.ok(token);
     }

@@ -8,7 +8,7 @@ import javax.persistence.*;
 @Entity
 public class Trigger {
     @Id
-    @GeneratedValue
+    //@GeneratedValue
     private Long id;
 
     @Column
@@ -54,14 +54,10 @@ public class Trigger {
     public Trigger() {
     }
 
-    public Trigger(double minValue, double maxValue) {
+    public Trigger(Long id, double minValue, double maxValue) {
+        this.id = id;
         this.minValue = minValue;
         this.maxValue = maxValue;
-    }
-
-    public Trigger(Relation relation, String value) {
-        this.value = value;
-        this.relation = relation;
     }
 
     public Trigger(Long id, Relation relation, String value) {
@@ -98,6 +94,7 @@ public class Trigger {
                 case EQ:
                     return val.equals(input);
                 case CONTAINS:
+                    System.out.println("> " + val);
                     return val.contains(input);
                 default:
                     throw new Exception("Invalid relation for two Strings.");

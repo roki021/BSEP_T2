@@ -10,6 +10,8 @@ import com.hospitalplatform.hospital_platform.mercury.logger.impl.LogSimulatorLo
 import com.hospitalplatform.hospital_platform.mercury.message.MessageBroker;
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
 import com.hospitalplatform.hospital_platform.repository.AlarmRepository;
+import com.hospitalplatform.hospital_platform.repository.TriggerRepository;
+import com.hospitalplatform.hospital_platform.service.BlacklistService;
 import com.hospitalplatform.hospital_platform.service.HospitalUserService;
 import com.hospitalplatform.hospital_platform.service.LoggerDemonService;
 import com.hospitalplatform.hospital_platform.service.imple.LoggerDemonServiceImpl;
@@ -37,8 +39,16 @@ public class MercuryConfig {
     @Autowired
     private HospitalUserService hospitalUserService;
 
+    @Autowired
+    private BlacklistService blacklistService;
+
+    @Autowired
+    private TriggerRepository triggerRepository;
+
     @Bean
     public MessageBroker createMessageBrokerInstance() {
+        Trigger blacklistTrigger = blacklistService.getBlacklistTrigger();
+
         MessageBroker messageBroker = new MessageBroker();
 
         Optional<Alarm> loginAlarmOptional = this.alarmRepository.findByName(LOGIN_ALARM);
@@ -46,6 +56,24 @@ public class MercuryConfig {
         Optional<Alarm> longNoActiveAlarmOptional = this.alarmRepository.findByName(LONG_NO_ACTIVE_ALARM);
         Optional<Alarm> errorAlarmOptional = this.alarmRepository.findByName(ERROR_ALARM);
         Optional<Alarm> dosAlarmOptional = this.alarmRepository.findByName(DOS_ALARM);
+
+        if (ipBlackListAlarmOptional.isEmpty()) {
+            // security alarms
+            Alarm ipBlackListAlarm = new Alarm(
+                    MercuryConfig.IP_BLACKLIST_ALARM,
+                    "Access from black listed address. (ip %s)",
+                    (alarm) -> {
+                        System.out.println(alarm.message());
+                    },
+                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
+                    new LinkedHashMap<>() {{
+                        put("ip", blacklistTrigger);
+                    }},
+                    1, 3L, "ip");
+            this.alarmRepository.save(ipBlackListAlarm);
+            messageBroker.addAlarm(ipBlackListAlarm);
+        } else
+            messageBroker.addAlarm(ipBlackListAlarmOptional.get());
 
         if (dosAlarmOptional.isEmpty()) {
             // security, dos alarm
@@ -57,7 +85,7 @@ public class MercuryConfig {
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("status", new Trigger(Relation.CONTAINS, "SUCCESS,ERROR,INFO,WARN"));
+                        put("status", triggerRepository.save(new Trigger(2L, Relation.CONTAINS, "SUCCESS,ERROR,INFO,WARN")));
                     }},
                     60, 1L);
             this.alarmRepository.save(dosAlarm);
@@ -75,7 +103,7 @@ public class MercuryConfig {
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("status", new Trigger(Relation.EQ, "ERROR"));
+                        put("status", triggerRepository.save(new Trigger(3L, Relation.EQ, "ERROR")));
                     }},
                     1, Long.MAX_VALUE);
             this.alarmRepository.save(errorAlarm);
@@ -94,8 +122,8 @@ public class MercuryConfig {
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("status", new Trigger(Relation.CONTAINS, "SUCCESS,SALIENT"));
-                        put("identifier", new Trigger(Relation.CONTAINS, "LASTACTIVE,LOGINSUCCESS"));
+                        put("status", triggerRepository.save(new Trigger(4L, Relation.CONTAINS, "SUCCESS,SALIENT")));
+                        put("identifier", triggerRepository.save(new Trigger(5L, Relation.CONTAINS, "LASTACTIVE,LOGINSUCCESS")));
                     }},
                     1, Long.MAX_VALUE, "username");
             this.alarmRepository.save(longNoActiveAlarm);
@@ -114,31 +142,13 @@ public class MercuryConfig {
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("status", new Trigger(Relation.EQ, "WARNING"));
+                        put("status", triggerRepository.save(new Trigger(6L, Relation.EQ, "WARNING")));
                     }},
                     3, 3600L, "username");
             this.alarmRepository.save(loginAlarm);
             messageBroker.addAlarm(loginAlarm);
         } else
             messageBroker.addAlarm(loginAlarmOptional.get());
-
-        if (ipBlackListAlarmOptional.isEmpty()) {
-            // security alarms
-            Alarm ipBlackListAlarm = new Alarm(
-                    MercuryConfig.IP_BLACKLIST_ALARM,
-                    "Access from black listed address. (ip %s)",
-                    (alarm) -> {
-                        System.out.println(alarm.message());
-                    },
-                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
-                    new LinkedHashMap<>() {{
-                        put("ip", new Trigger(Relation.CONTAINS, "127.0.0.1,127.0.0.2"));
-                    }},
-                    1, 3L, "ip");
-            this.alarmRepository.save(ipBlackListAlarm);
-            messageBroker.addAlarm(ipBlackListAlarm);
-        } else
-            messageBroker.addAlarm(ipBlackListAlarmOptional.get());
 
         return messageBroker;
     }
