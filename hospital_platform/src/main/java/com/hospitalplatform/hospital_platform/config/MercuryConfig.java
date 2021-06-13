@@ -105,7 +105,7 @@ public class MercuryConfig {
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("status", new Trigger(Relation.EQ, "WARN"));
+                        put("status", new Trigger(Relation.EQ, "WARNING"));
                     }},
                     3, 3600L, "username");
             this.alarmRepository.save(loginAlarm);

@@ -48,22 +48,22 @@ public class AuthController {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (token == null) {
             logger.writeMessage(
-                    String.format("[WARN] %s %s %s- username %s ip %s",
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
                             simpleDateFormat.format(new Date()),
-                            loginDTO.getUsername(),
-                            request.getRemoteAddr(),
                             "api/login",
-                            "ID"));
+                            "ID",
+                            loginDTO.getUsername(),
+                            request.getRemoteAddr()));
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
 
         logger.writeMessage(
-                String.format("[SUCCESS] %s %s %s- username %s ip %s",
+                String.format("[SUCCESS] %s %s %s - username %s ip %s",
                         simpleDateFormat.format(new Date()),
-                        loginDTO.getUsername(),
-                        request.getRemoteAddr(),
                         "api/login",
-                        "ID"));
+                        "ID",
+                        loginDTO.getUsername(),
+                        request.getRemoteAddr()));
 
 
         return ResponseEntity.ok(token);
