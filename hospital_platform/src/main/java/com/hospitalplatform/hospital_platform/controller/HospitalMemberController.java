@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
 @RestController
 @RequestMapping("/api/external/members")
 public class HospitalMemberController {
@@ -21,17 +23,16 @@ public class HospitalMemberController {
 
     @PostMapping
     public ResponseEntity<?> createMember(@RequestHeader("X-sudo-key") String key,
-                                          @RequestBody @Validated NewMemberDTO member) throws Exception {System.out.println(key);
-        if (!securityService.checkSecurityToken(key))
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-
+                                          @RequestBody @Validated NewMemberDTO member) throws Exception {
+        /*if (!securityService.checkSecurityToken(key))
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);*/
         hospitalUserService.createUser(member);
         return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/{memberId}")
     public ResponseEntity<?>  deleteMember(@RequestHeader("X-sudo-key") String key,
-                                           @PathVariable Integer memberId) {System.out.println(key);
+                                           @PathVariable Integer memberId) {
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
@@ -40,7 +41,7 @@ public class HospitalMemberController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getMembers(@RequestHeader("X-sudo-key") String key) {System.out.println(key);
+    public ResponseEntity<?> getMembers(@RequestHeader("X-sudo-key") String key) {
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
@@ -51,11 +52,15 @@ public class HospitalMemberController {
     public ResponseEntity<?> changeMemberRole(@RequestHeader("X-sudo-key") String key,
                                               @PathVariable Integer memberId,
                                               @RequestBody @Validated RoleUpdateDTO roleUpdateDTO) {
-        System.out.println(key);
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
         hospitalUserService.changeUserRole(memberId, roleUpdateDTO);
         return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
+    }
+
+    @ExceptionHandler({ Exception.class })
+    public ResponseEntity<?> handleException() {
+        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 }

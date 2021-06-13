@@ -35,7 +35,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         if (httpServletRequest.getCookies() != null)
             for (Cookie cookie : httpServletRequest.getCookies())
-                if (cookie.getName().equals("__Secure-Fgp"))
+                if (cookie.getName().equals("__Secure-Fgp")) //TODO: take care about __
                     fingerprint = cookie.getValue();
 
         if (authToken != null) {

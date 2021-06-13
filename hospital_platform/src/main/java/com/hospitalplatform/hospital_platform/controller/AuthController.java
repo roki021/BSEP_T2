@@ -40,9 +40,11 @@ public class AuthController {
 
         HttpHeaders headers = new HttpHeaders();
 
+        //TODO: fore debug "_Secure-Fgp=" + token.getFingerprint() + "; Path=/; HttpOnly" (change in filter also! __)
+
         headers.add(
                 "Set-Cookie",
-                "__Secure-Fgp=" + token.getFingerprint() + "; SameSite=Strict; HttpOnly; Secure");
+                "__Secure-Fgp=" + token.getFingerprint() + "; Path=/; SameSite=Strict; HttpOnly; Secure");
 
         return new ResponseEntity<UserTokenStateDTO>(token.getUserTokenStateDTO(), headers, HttpStatus.OK);
     }
