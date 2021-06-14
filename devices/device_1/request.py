@@ -30,10 +30,11 @@ def send_request(
 
     conn = Connection(context, socket.socket(socket.AF_INET, socket.SOCK_STREAM))
     conn.connect((host, port))
-    conn.request_ocsp()
+    if check_ocsp:
+        conn.request_ocsp()
     conn.send(bytes(
         f"{method} {endpoint} HTTP/1.1\nHost: {host}:{port}\n" + 
-        f"Content-Type: text/plain\nContent-Length: {len(data)}\n\n{data}", encoding="utf8"
+        f"Content-Type: text/plain\norigin: https://{host}:{port}\nContent-Length: {len(data)}\n\n{data}", encoding="utf8"
     ))
     response = conn.read(2048)
     conn.close()

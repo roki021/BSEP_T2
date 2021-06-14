@@ -134,7 +134,7 @@ def check_ocsp():
 
 def send_message(message):
     try:
-        send_request(HOSPITAL_HOST, HOSPITAL_PORT, ENDPOINT, 'POST', message, API_CRT, API_KEY, API_CA_T)
+        send_request(HOSPITAL_HOST, HOSPITAL_PORT, ENDPOINT, 'POST', message, API_CRT, API_KEY, API_CA_T, False)
     except Exception as ex:
         print(ex)
 
