@@ -97,6 +97,7 @@
 </template>
 <script>
 import axios from "axios";
+import { postman } from "../../postman.js";
 
 export default {
   data: () => ({
@@ -116,8 +117,8 @@ export default {
     issueCertificate () {
       this.waitingResponse = true;
 
-      axios
-      .post(`http://localhost:8080/api/issue-certificate/${this.activeRequest.id}/${this.template}`)
+      postman
+      .post(`https://localhost:8080/api/issue-certificate/${this.activeRequest.id}/${this.template}`)
       .then(() => {
         this.waitingResponse = false;
         this.active = false;
@@ -135,8 +136,8 @@ export default {
     }
   },
   mounted() {
-    axios
-      .get('http://localhost:8080/api/certificate-signing-requests')
+    postman
+      .get('https://localhost:8080/api/certificate-signing-requests')
       .then((response) => {
         this.requests = response.data;
       });

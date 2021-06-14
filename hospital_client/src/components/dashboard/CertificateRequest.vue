@@ -60,7 +60,7 @@
   </vs-row>
 </template>
 <script>
-import axios from "axios";
+import { postman } from "../../postman.js";
 
 export default {
   data: () => ({
@@ -80,7 +80,7 @@ export default {
     sendRequest() {
       this.sending = true;
 
-      axios
+      postman
         .post(
           `${process.env.VUE_APP_HOSPITAL_API}/certificate-signing-requests`,
           this.requestData
@@ -108,7 +108,8 @@ export default {
   computed: {
   },
   mounted() {
-    axios.get(`${process.env.VUE_APP_HOSPITAL_API}/certificate-signing-requests/autofill-data`).then(
+    postman
+    .get(`${process.env.VUE_APP_HOSPITAL_API}/certificate-signing-requests/autofill-data`, {withCredentials: true}).then(
       response => {
         this.requestData.surname = response.data.surname
         this.requestData.givenName = response.data.givenName

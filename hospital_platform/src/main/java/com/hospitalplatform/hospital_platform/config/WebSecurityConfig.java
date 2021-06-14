@@ -1,5 +1,7 @@
 package com.hospitalplatform.hospital_platform.config;
 
+import com.hospitalplatform.hospital_platform.security.cors.SimpleCORSFilter;
+import com.hospitalplatform.hospital_platform.security.xss.XSSFilter;
 import com.hospitalplatform.hospital_platform.service.imple.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -51,7 +53,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private TokenUtils tokenUtils;
 
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -63,9 +64,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/api/certificate").permitAll()
                 .antMatchers("/api/devices/receive").permitAll()
-                .and().cors().and()
-            .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService),
-                        BasicAuthenticationFilter.class);
+                .antMatchers("/api/send").permitAll()
+                .anyRequest().authenticated()
+                    .and()
+                    .x509()
+                    .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                    .userDetailsService(userDetailsService())
+                    .and()
+            .cors().and()
+            .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService), BasicAuthenticationFilter.class);
+
         http.csrf().disable();
 
         http.headers()
@@ -77,7 +85,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers(HttpMethod.GET, "/", "/webjars/**", "/*.html", "/favicon.ico", "/**/*.html",
-                "/**/*.css", "/**/*.js");
+        //web.ignoring().antMatchers(HttpMethod.GET, "/webjars/**", "/*.html", "/favicon.ico", "/**/*.html",
+        //        "/**/*.css", "/**/*.js");
     }
 }
