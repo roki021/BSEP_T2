@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { postman } from "../../postman.js";
 export default {
     data: () => ({
         token: '',
@@ -33,16 +33,16 @@ export default {
         changeStatus() {
             this.sendingRequest = true
             var status = !this.active ? 'activate' : 'deactivate'
-            axios
-            .post(`${process.env.VUE_APP_HOSPITAL_API}/security/token/${status}`)
+            postman
+            .post(`${process.env.VUE_APP_HOSPITAL_API}/security/token/${status}`, {}, {withCredentials: true})
             .then(() => {
                 this.sendingRequest = false
             })
         }
     },
     mounted() {
-        axios
-        .get(`${process.env.VUE_APP_HOSPITAL_API}/security/token`)
+        postman
+        .get(`${process.env.VUE_APP_HOSPITAL_API}/security/token`, {withCredentials: true})
         .then(response => {
             this.token = response.data.token
             this.active = response.data.active

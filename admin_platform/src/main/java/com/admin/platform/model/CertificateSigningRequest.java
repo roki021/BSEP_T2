@@ -63,7 +63,7 @@ public class CertificateSigningRequest {
         this.uniqueIdentifier = uniqueIdentifier;
         this.title = title;
         this.fullCertificate = fullCertificate;
-        this.active = true; //TODO: false
+        this.active = false;
         this.communicationToken = communicationToken;
     }
 

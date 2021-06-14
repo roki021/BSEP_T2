@@ -125,7 +125,8 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
                                 csr.getCommonName(),
                                 csr.getOrganization(),
                                 csr.getOrganizationUnit(),
-                                csr.getCommunicationToken()));
+                                csr.getCommunicationToken(),
+                                csr.getEmail()));
             return digitalCertificate;
         } catch (Exception e) {
             e.printStackTrace();

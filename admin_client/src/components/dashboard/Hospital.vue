@@ -9,6 +9,10 @@
               >
                 Create new member
             </vs-button>
+            <vs-button style="float: right; margin-bottom: 10px;" v-on:click="showLoggerConfig()"
+              >
+                Logger configuration
+            </vs-button>
             <vs-table>
               <template #thead>
                 <vs-tr>
@@ -138,6 +142,68 @@
       </template>
     </vs-dialog>
 
+    <vs-dialog width="550px" v-model="loggerConfigView">
+      <template #header>
+        <h4 class="not-margin">Logger configuration</h4>
+      </template>
+      <div class="con-form">
+        <div class="center grid">
+          <vs-row>
+            <vs-col w="7">
+              <vs-row>
+                <vs-col>
+                  <div class="wrapper">
+                    <vs-input dark v-model="logger.path" placeholder="Log path" />
+                  </div>
+                </vs-col>
+              </vs-row>
+              <vs-row>
+                <vs-col>
+                  <div class="wrapper">
+                    <vs-input dark v-model="logger.readFrequence" placeholder="Read frequence" />
+                  </div>
+                </vs-col>
+              </vs-row>
+              <vs-row v-for="(item,index) in logger.params" v-bind:key="index">
+                <vs-col w="5">
+                    <div class="wrapper">
+                      <vs-input :disabled="index < logger.params.length - 1" dark v-model="item.name" placeholder="Name" />
+                    </div>
+                </vs-col>
+                <vs-col w="5">
+                  <div class="wrapper">
+                      <vs-input dark :disabled="index < logger.params.length - 1" v-model="item.regex" placeholder="Regex" />
+                    </div>
+                </vs-col>
+              </vs-row>
+              <vs-row>
+                <div class="wrapper">
+                  <vs-button style="float: right;" v-on:click="addParam()">Add param</vs-button>
+                  <vs-button style="float: right;" v-on:click="addLogger()">Add logger</vs-button>
+                </div>
+              </vs-row>
+            </vs-col>
+            <vs-col w="3">
+              <div class="wrapper">
+                <ul>
+                  <li v-for="(item,index) in loggers" :key="index">{{ item.path }}</li>
+                </ul>
+              </div>
+            </vs-col>
+          </vs-row>
+        </div>
+        <template>
+        <div class="footer-dialog">
+          <vs-row>
+            <vs-col>
+              <vs-button :loading="waitingUpdateResponse" block v-on:click="updateMember()"> Send loggers configuration </vs-button>
+            </vs-col>
+          </vs-row>
+        </div>
+      </template>
+      </div>
+    </vs-dialog>
+
     <vs-dialog v-model="activeEdit">
       <template #header>
         <h4 class="not-margin">Hospital member details</h4>
@@ -233,7 +299,7 @@
 import axios from 'axios'
 export default {
   data: () => ({
-    organization: 'Organization name',
+    organization: 'Hospital',
     hospitalMembers: [],
     hospitalId: null,
     activeNew: false,
@@ -242,6 +308,20 @@ export default {
     waitingResponse: false,
     waitingDeleteResponse: false,
     waitingUpdateResponse: false,
+    loggerConfigView: true,
+    value5: '',
+    loggers: [],
+    logger: {
+      path: '',
+      readFrequence: '',
+      params: [
+        {
+          name: '',
+          regex: ''
+        }
+      ]
+
+    },
     hospitalMember: {
       firstName: '',
       lastName: '',
@@ -294,6 +374,27 @@ export default {
       this.getMembers()
   },
   methods: {
+    addLogger() {
+      this.loggers.push({...this.logger})
+      this.logger.path = ''
+      this.logger.readFrequence = ''
+      this.logger.params = [{
+          name: '',
+          regex: ''
+        }]
+      console.log(this.loggers)
+    },
+    addParam() {
+      this.logger.params.push(
+        {
+          name: '',
+          regex: ''
+        }
+      )
+    },
+    showLoggerConfig() {
+      this.loggerConfigView = true
+    },
     showCreate() {
       this.activeNew = true
 

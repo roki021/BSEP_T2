@@ -1,5 +1,6 @@
 package com.admin.platform.controller;
 
+import com.admin.platform.dto.LoggersDTO;
 import com.admin.platform.dto.NewMemberDTO;
 import com.admin.platform.dto.RoleUpdateDTO;
 import com.admin.platform.service.HospitalService;
@@ -64,5 +65,11 @@ public class HospitalController {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/{hospitalId}")
+    public ResponseEntity<?> sendLoggerConfig(
+            @PathVariable Integer hospitalId, @RequestBody @Validated LoggersDTO loggersDTO) {
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }

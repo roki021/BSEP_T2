@@ -50,6 +50,7 @@ public class HospitalServiceImpl implements HospitalService {
 
         String requestUrl = String.format("http://%s/api/external/members", hospitalDTO.get().getEndpoint());
         HttpHeaders headers = new HttpHeaders();
+        headers.add("origin", "https://localhost:8080");
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
         ResponseEntity<HospitalUserDTO[]> responseEntity =
@@ -72,6 +73,7 @@ public class HospitalServiceImpl implements HospitalService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
+        headers.add("origin", "https://localhost:8080");
         HttpEntity<NewMemberDTO> request = new HttpEntity<>(memberDTO, headers);
         String requestUrl = String.format("http://%s/api/external/members", hospitalDTO.get().getEndpoint());
         restTemplate.postForLocation(requestUrl, request);
@@ -87,6 +89,7 @@ public class HospitalServiceImpl implements HospitalService {
         String requestUrl = String.format(
                 "http://%s/api/external/members/%d", hospitalDTO.get().getEndpoint(), memberId);
         HttpHeaders headers = new HttpHeaders();
+        headers.add("origin", "https://localhost:8080");
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
         restTemplate.exchange(requestUrl, HttpMethod.DELETE, entity, Object.class);
@@ -101,10 +104,16 @@ public class HospitalServiceImpl implements HospitalService {
             throw new Exception("Hospital does not exist.");
 
         HttpHeaders headers = new HttpHeaders();
+        headers.add("origin", "https://localhost:8080");
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
         HttpEntity<RoleUpdateDTO> request = new HttpEntity<>(newRole, headers);
         String requestUrl = String.format(
                 "http://%s/api/external/members/%d/roles", hospitalDTO.get().getEndpoint(), memberId);
         restTemplate.put(requestUrl, request);
+    }
+
+    @Override
+    public void sendLoggerConfigurationToAdministration() {
+
     }
 }
