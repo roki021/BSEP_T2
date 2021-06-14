@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class AlarmServiceImpl implements AlarmService {
@@ -32,6 +33,12 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public AlarmDTO addAlarm(AlarmDTO alarmDTO) throws SQLConflict {
         if(alarmRepository.findByName(alarmDTO.getName()).isEmpty()) {
+            Random rand = new Random();
+            Long id;
+            do {
+                id = (long) rand.nextInt(1000);
+            } while(alarmRepository.findById(id).isPresent());
+            alarmDTO.setId(id);
             Alarm alarm = alarmMapper.toModel(alarmDTO);
             AlarmDTO added = alarmMapper.toDto(alarmRepository.save(alarm));
             this.messageBroker.addAlarm(alarm);

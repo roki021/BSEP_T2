@@ -64,7 +64,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/api/certificate").permitAll()
                 .antMatchers("/api/devices/receive").permitAll()
-                .antMatchers("/api/send").permitAll()
                 .anyRequest().authenticated()
                     .and()
                     .x509()
