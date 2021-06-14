@@ -36,4 +36,9 @@ public class BlacklistServiceImpl implements BlacklistService {
         this.trigger.setValue(this.trigger.getValue() + "," + address);
         this.triggerRepository.save(this.trigger);
     }
+
+    @Override
+    public boolean contains(String address) {
+        return this.trigger.getValue().contains(address);
+    }
 }

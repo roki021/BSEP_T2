@@ -69,10 +69,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
 
         http.headers()
-                /*.xssProtection()
+                .xssProtection()
                 .and()
                 .contentSecurityPolicy("script-src 'self'")
-                .and()*/.frameOptions().disable();
+                .and().frameOptions().disable();
     }
 
     @Override

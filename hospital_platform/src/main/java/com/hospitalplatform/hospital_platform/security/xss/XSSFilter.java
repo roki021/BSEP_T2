@@ -11,8 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 
-//@Component
-//@Order(Ordered.HIGHEST_PRECEDENCE)
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class XSSFilter implements Filter {
 
     private static final ArrayList<String> permitted = new ArrayList<>() {{

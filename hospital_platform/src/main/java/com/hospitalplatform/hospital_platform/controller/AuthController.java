@@ -48,10 +48,21 @@ public class AuthController {
             HttpServletRequest request) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+        if (blacklistService.contains(request.getRemoteAddr())) {
+            logger.writeMessage(
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
+                            simpleDateFormat.format(new Date()),
+                            "api/login",
+                            "IPBLOCKED",
+                            loginDTO.getUsername(),
+                            request.getRemoteAddr()));
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
         // quick
         if (hospitalUserService.isUserLocked(loginDTO.getUsername())) {
             logger.writeMessage(
-                    String.format("[INFO] %s %s %s - username %s ip %s",
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
                             simpleDateFormat.format(new Date()),
                             "api/login",
                             "LOGINLOCKED",

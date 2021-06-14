@@ -94,7 +94,6 @@ public class Trigger {
                 case EQ:
                     return val.equals(input);
                 case CONTAINS:
-                    System.out.println("> " + val);
                     return val.contains(input);
                 default:
                     throw new Exception("Invalid relation for two Strings.");
@@ -102,7 +101,7 @@ public class Trigger {
         }
     }
 
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
 

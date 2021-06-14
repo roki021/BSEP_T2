@@ -9,6 +9,7 @@ import org.jeasy.rules.api.Facts;
 import org.jeasy.rules.core.BasicRule;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,9 @@ public class Alarm extends BasicRule {
 
     @Transient
     private Long messagesDiff;
+
+    @Transient
+    private Long newEra;
 
     public Alarm() {
     }
@@ -113,8 +117,11 @@ public class Alarm extends BasicRule {
                 "[root]" : message.getField(this.messageTracker).toString();
 
         this.historian.update(messageKey, message.getTime());
-
         this.lastMessageKey = messageKey;
+
+        // preserve chain, but if it is not your era - don't execute :/
+        if (message.getTime() < this.newEra)
+            return false;
 
         return this.historian.getCount(messageKey) >= activationThreshold;
     }
@@ -134,6 +141,10 @@ public class Alarm extends BasicRule {
             System.err.println(this.message());
     }
 
+    public void resetAlarm(String messageKey) {
+        this.historian.resetCount(this.lastMessageKey);
+    }
+
     public String message() {
         List<String> newList = new ArrayList<>();
         if (this.triggerNames != null)
@@ -151,5 +162,9 @@ public class Alarm extends BasicRule {
 
     public Long getMessagesDiff() {
         return messagesDiff;
+    }
+
+    public void setNewEra(Long newEra) {
+        this.newEra = newEra;
     }
 }

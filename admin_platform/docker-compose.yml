@@ -22,6 +22,7 @@ services:
       - ../hospital_platform/ssl/keystore:/etc/ssl/certs/
       - ../hospital_platform/ssl/truststore:/etc/ssl/trust/
       - ../hospital_platform/ssl/ocsp:/etc/ssl/ocsp/
+      - ../logger/:/etc/logger/
   nginx-hospital:
     build: ../hospital_platform/nginx
     volumes:
