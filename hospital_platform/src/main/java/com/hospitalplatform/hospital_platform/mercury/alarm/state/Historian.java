@@ -17,7 +17,15 @@ public class Historian {
         history.put(key, counter);
     }
 
+    public long getActivationDiff(Object key) {
+        return history.get(key).getDiff();
+    }
+
     public int getCount(Object key) {
         return history.get(key).getCounter();
+    }
+
+    public void resetCount(Object key) {
+        history.get(key).reset();
     }
 }

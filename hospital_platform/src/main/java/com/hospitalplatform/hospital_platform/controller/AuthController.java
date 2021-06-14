@@ -5,9 +5,7 @@ import com.hospitalplatform.hospital_platform.dto.UserTokenStateDTO;
 import com.hospitalplatform.hospital_platform.mercury.logger.Logger;
 import com.hospitalplatform.hospital_platform.mercury.logger.impl.LogSimulatorLogger;
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
-import com.hospitalplatform.hospital_platform.service.AuthService;
-import com.hospitalplatform.hospital_platform.service.CertificateService;
-import com.hospitalplatform.hospital_platform.service.LoggerDemonService;
+import com.hospitalplatform.hospital_platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -34,6 +32,12 @@ public class AuthController {
     private AuthService authService;
 
     @Autowired
+    private HospitalUserService hospitalUserService;
+
+    @Autowired
+    private BlacklistService blacklistService;
+
+    @Autowired
     @Qualifier("authLogger")
     private Logger logger;
 
@@ -42,29 +46,52 @@ public class AuthController {
             @RequestBody @Validated LoginDTO loginDTO,
             HttpServletResponse response,
             HttpServletRequest request) {
-        UserTokenStateDTO token = authService.loginUser(loginDTO);
-
-        //TODO move to the better place
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        if (token == null) {
+
+        if (blacklistService.contains(request.getRemoteAddr())) {
             logger.writeMessage(
-                    String.format("[WARN] %s %s %s- username %s ip %s",
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
                             simpleDateFormat.format(new Date()),
-                            loginDTO.getUsername(),
-                            request.getRemoteAddr(),
                             "api/login",
-                            "ID"));
+                            "IPBLOCKED",
+                            loginDTO.getUsername(),
+                            request.getRemoteAddr()));
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
 
-        logger.writeMessage(
-                String.format("[SUCCESS] %s %s %s- username %s ip %s",
-                        simpleDateFormat.format(new Date()),
-                        loginDTO.getUsername(),
-                        request.getRemoteAddr(),
-                        "api/login",
-                        "ID"));
+        // quick
+        if (hospitalUserService.isUserLocked(loginDTO.getUsername())) {
+            logger.writeMessage(
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
+                            simpleDateFormat.format(new Date()),
+                            "api/login",
+                            "LOGINLOCKED",
+                            loginDTO.getUsername(),
+                            request.getRemoteAddr()));
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
 
+        UserTokenStateDTO token = authService.loginUser(loginDTO);
+
+        if (token == null) {
+            logger.writeMessage(
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
+                            simpleDateFormat.format(new Date()),
+                            "api/login",
+                            "LOGINFAIL",
+                            loginDTO.getUsername(),
+                            request.getRemoteAddr()));
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
+        hospitalUserService.updateLastAccess(loginDTO.getUsername());
+        logger.writeMessage(
+                String.format("[SUCCESS] %s %s %s - username %s ip %s",
+                        simpleDateFormat.format(new Date()),
+                        "api/login",
+                        "LOGINSUCCESS",
+                        loginDTO.getUsername(),
+                        request.getRemoteAddr()));
 
         return ResponseEntity.ok(token);
     }

@@ -24,6 +24,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -102,6 +103,47 @@ public class HospitalUserServiceImpl implements HospitalUserService {
     }
 
     @Override
+    public void lockUser(String username) {
+        HospitalUser user = repository.findByUsername(username);
+        if (user == null)
+            return;
+        user.setLocked(true);
+        repository.save(user);
+    }
+
+    @Override
+    public void unlockUser(String username) {
+        HospitalUser user = repository.findByUsername(username);
+        if (user == null)
+            return;
+        user.setLocked(false);
+        repository.save(user);
+    }
+
+    @Override
+    public long getUserLastAccess(String username) {
+        HospitalUser user = repository.findByUsername(username);
+        if (user == null)
+            return 0L;
+        return user.getLastAccess().getTime();
+    }
+
+    @Override
+    public void updateLastAccess(String username) {
+        HospitalUser user = repository.findByUsername(username);
+        user.setLastAccess(new Timestamp(System.currentTimeMillis()));
+        repository.save(user);
+    }
+
+    @Override
+    public boolean isUserLocked(String username) {
+        HospitalUser user = repository.findByUsername(username);
+        if (user == null)
+            return false;
+        return !user.isAccountNonLocked();
+    }
+
+    @Override
     public void changeUserRole(Integer userId, @Validated RoleUpdateDTO roleUpdateDTO) {
         Optional<HospitalUser> hospitalUserOptional = repository.findById(userId);
         if (hospitalUserOptional.isEmpty())
@@ -132,6 +174,11 @@ public class HospitalUserServiceImpl implements HospitalUserService {
     public List<HospitalUserDTO> getHospitalUsers() {
         HospitalUserMapper mapper = new HospitalUserMapper();
         return repository.findAll().stream().map(user -> mapper.getDTO(user)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<HospitalUser> getHospitalUsersModels() {
+        return repository.findAll();
     }
 
 

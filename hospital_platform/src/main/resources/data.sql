@@ -7,16 +7,16 @@ INSERT INTO privilege (id, name) VALUES (2, 'CREATE_CSR_PRIVILEGE');
 INSERT INTO privilege (id, name) VALUES (3, 'CHANGE_TOKEN_STATUS_PRIVILEGE');
 INSERT INTO privilege (id, name) VALUES (4, 'READ_TOKEN_STATUS_PRIVILEGE');
 
-INSERT INTO hospital_user (id, username, firstName, lastName, email, password)
-VALUES (0, 'admin', 'Jovan', 'Gruncic', 'zdravko.dugi@hospital-a.com', '$2y$12$xpC9vhFB42C6M8loyxyyBemcr77Lh603KMDRi0GXqC8W2PzfSynPu');
+INSERT INTO hospital_user (id, username, firstName, lastName, email, password, locked, lastAccess)
+VALUES (0, 'admin', 'Jovan', 'Gruncic', 'zdravko.dugi@hospital-a.com', '$2y$12$xpC9vhFB42C6M8loyxyyBemcr77Lh603KMDRi0GXqC8W2PzfSynPu', false, CURRENT_TIMESTAMP);
 -- K1inik@12E
 
-INSERT INTO hospital_user (id, username, firstName, lastName, email, password)
-VALUES (1, 'doctorPera', 'Petar', 'Kralj', 'doctor.pera@hospital-a.com', '$2y$12$xpC9vhFB42C6M8loyxyyBemcr77Lh603KMDRi0GXqC8W2PzfSynPu');
+INSERT INTO hospital_user (id, username, firstName, lastName, email, password, locked, lastAccess)
+VALUES (1, 'doctorPera', 'Petar', 'Kralj', 'doctor.pera@hospital-a.com', '$2y$12$xpC9vhFB42C6M8loyxyyBemcr77Lh603KMDRi0GXqC8W2PzfSynPu', false, CURRENT_TIMESTAMP);
 -- K1inik@12E
 
-INSERT INTO hospital_user (id, username, firstName, lastName, email, password)
-VALUES (2, 'doctorSteva', 'Stevan', 'Sremac', 'doctor.steva@hospital-a.com', '$2y$12$xpC9vhFB42C6M8loyxyyBemcr77Lh603KMDRi0GXqC8W2PzfSynPu');
+INSERT INTO hospital_user (id, username, firstName, lastName, email, password, locked, lastAccess)
+VALUES (2, 'doctorSteva', 'Stevan', 'Sremac', 'doctor.steva@hospital-a.com', '$2y$12$xpC9vhFB42C6M8loyxyyBemcr77Lh603KMDRi0GXqC8W2PzfSynPu', false, CURRENT_TIMESTAMP);
 -- K1inik@12E
 
 INSERT INTO hospital_users_roles (hospital_user_id, role_id) VALUES (0, 0);

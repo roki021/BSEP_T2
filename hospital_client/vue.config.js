@@ -7,7 +7,6 @@ module.exports = {
     https: true,
     key: fs.readFileSync('.\\root.key'),
     cert: fs.readFileSync('.\\root.crt'),
-    https: true,
     hotOnly: false,
     }
 }
