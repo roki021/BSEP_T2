@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import axios from 'axios'
+import { postman } from "./postman.js";
 
 Vue.use(Vuex)
 
@@ -12,12 +12,15 @@ export const store = new Vuex.Store({
     actions: {
         requestAuth: ({commit}, user) => {
             return new Promise((resolve, reject) => {
-                axios
-                .post(`${process.env.VUE_APP_HOSPITAL_API}/auth/login`, user)
+                postman
+                .post(`${process.env.VUE_APP_HOSPITAL_API}/auth/login`, user, {withCredentials: true})
                 .then(response => {
+                    console.log(response.headers)
+
                     var token = response.data.accessToken
                     localStorage.setItem('user-token', token)
-                    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+                    console.log('set', 'Bearer ' + token)
+                    postman.defaults.headers.common['Authorization'] = 'Bearer ' + token
                     commit('login', token)
                     resolve(response.data)
                 })
@@ -32,14 +35,14 @@ export const store = new Vuex.Store({
                 commit('logout')
                 localStorage.removeItem('user-token')
                 // remove the axios default header
-                delete axios.defaults.headers.common['Authorization']
+                delete postman.defaults.headers.common['Authorization']
                 resolve()
             })
         },
         getAllDevices: ({commit}) => {
             return new Promise((resolve, reject) => {
-                axios
-                .get(`${process.env.VUE_APP_HOSPITAL_API}/devices`)
+                postman
+                .get(`${process.env.VUE_APP_HOSPITAL_API}/devices`, {withCredentials: true})
                 .then(response => {
                     commit('setDevices', response.data)
                     resolve(response.data);
@@ -54,8 +57,8 @@ export const store = new Vuex.Store({
         addNewDevice: ({commit}, device) => {
             console.log(device);
             return new Promise((resolve, reject) => {
-                axios
-                .post(`${process.env.VUE_APP_HOSPITAL_API}/devices`, device)
+                postman
+                .post(`${process.env.VUE_APP_HOSPITAL_API}/devices`, device, {withCredentials: true})
                 .then(response => {
                     resolve(response.data);
                 })

@@ -41,7 +41,7 @@ public class HospitalMemberController {
 
     @DeleteMapping("/{memberId}")
     public ResponseEntity<?>  deleteMember(@RequestHeader("X-sudo-key") String key,
-                                           @PathVariable Integer memberId) {System.out.println(key);
+                                           @PathVariable Integer memberId) {
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
@@ -50,7 +50,7 @@ public class HospitalMemberController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getMembers(@RequestHeader("X-sudo-key") String key) {System.out.println(key);
+    public ResponseEntity<?> getMembers(@RequestHeader("X-sudo-key") String key) {
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
@@ -61,11 +61,15 @@ public class HospitalMemberController {
     public ResponseEntity<?> changeMemberRole(@RequestHeader("X-sudo-key") String key,
                                               @PathVariable Integer memberId,
                                               @RequestBody @Validated RoleUpdateDTO roleUpdateDTO) {
-        System.out.println(key);
         if (!securityService.checkSecurityToken(key))
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 
         hospitalUserService.changeUserRole(memberId, roleUpdateDTO);
         return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
+    }
+
+    @ExceptionHandler({ Exception.class })
+    public ResponseEntity<?> handleException() {
+        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 }

@@ -1,0 +1,32 @@
+{
+    "loggers": [
+        {
+            "readPeriod": 5,
+            "logPath": "/etc/logger/log1.txt",
+            "params": [
+                {
+                    "name": "username",
+                    "regex": "[a-zA-Z0-9]{3,50}" 
+                },
+                { 
+                    "name": "ip",
+                    "regex": "[0-9.:]+"
+                 }
+            ]
+        },
+        {
+            "readPeriod": 2,
+            "logPath": "/etc/logger/log2.txt",
+            "params": [
+                {
+                    "name": "username",
+                    "regex": "[a-zA-Z0-9]{3,50}" 
+                },
+                { 
+                    "name": "ip",
+                    "regex": "[0-9.:]+"
+                 }
+            ]
+        }
+    ]
+}

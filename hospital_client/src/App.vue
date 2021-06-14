@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { postman } from './postman.js'
 
 export default {
   name: 'App',
@@ -13,9 +13,9 @@ export default {
     document.title = 'Hospital Platform'
 
     var token = localStorage.getItem('user-token')
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+    postman.defaults.headers.common['Authorization'] = 'Bearer ' + token
 
-    axios.interceptors.response.use(undefined, (err) => {
+    postman.interceptors.response.use(undefined, (err) => {
       let store = this.$store
       let router = this.$router
 

@@ -9,6 +9,7 @@ import org.jeasy.rules.api.Facts;
 import org.jeasy.rules.core.BasicRule;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,7 @@ public class Alarm extends BasicRule {
     private String messageTracker;
 
     @MapKey(name = "id")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true ,  mappedBy = "id")
+    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true ,  mappedBy = "id")
     private Map<String, Trigger> triggers;
 
     @Transient
@@ -50,6 +51,12 @@ public class Alarm extends BasicRule {
 
     @Transient
     private AlarmCallback callback; //TODO: if null just write to NoSQL?!
+
+    @Transient
+    private Long messagesDiff;
+
+    @Transient
+    private Long newEra;
 
     public Alarm() {
     }
@@ -110,18 +117,32 @@ public class Alarm extends BasicRule {
                 "[root]" : message.getField(this.messageTracker).toString();
 
         this.historian.update(messageKey, message.getTime());
-
         this.lastMessageKey = messageKey;
+
+        // preserve chain, but if it is not your era - don't execute :/
+        if (message.getTime() < this.newEra)
+            return false;
 
         return this.historian.getCount(messageKey) >= activationThreshold;
     }
 
     @Override
     public void execute(Facts facts) {
+        Message message = (Message) facts.get("log");
+        if (message.getField("status").toString().equals("SALIENT"))
+            return;
+
+        this.historian.resetCount(this.lastMessageKey);
+        this.messagesDiff = this.historian.getActivationDiff(this.lastMessageKey);
+
         if (this.callback != null)
             this.callback.execute(this);
         else
             System.err.println(this.message());
+    }
+
+    public void resetAlarm(String messageKey) {
+        this.historian.resetCount(this.lastMessageKey);
     }
 
     public String message() {
@@ -141,5 +162,17 @@ public class Alarm extends BasicRule {
 
     public String getAlarmMessage() {
         return alarmMessage;
+    }
+
+    public String getTrackingKey() {
+        return this.lastMessageKey;
+    }
+
+    public Long getMessagesDiff() {
+        return messagesDiff;
+    }
+
+    public void setNewEra(Long newEra) {
+        this.newEra = newEra;
     }
 }
