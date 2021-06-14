@@ -1,0 +1,16 @@
+FROM couchbase:latest
+
+ENV MEMORY_QUOTA 256
+ENV INDEX_MEMORY_QUOTA 256
+ENV FTS_MEMORY_QUOTA 256
+ENV CBAS_MEMORY_QUOTA 1024
+ENV EVENTING_MEMORY_QUOTA 512
+ENV SERVICES "kv,n1ql,index,fts"
+ENV USERNAME "admin"
+ENV PASSWORD "balkanika"
+ENV CLUSTER_HOST ""
+ENV CLUSTER_REBALANCE "true"
+
+COPY entrypoint.sh /config-entrypoint.sh
+
+ENTRYPOINT ["/config-entrypoint.sh"]

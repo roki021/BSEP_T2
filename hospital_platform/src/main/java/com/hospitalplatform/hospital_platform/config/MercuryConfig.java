@@ -6,6 +6,7 @@ import com.hospitalplatform.hospital_platform.mercury.alarm.constants.Relation;
 import com.hospitalplatform.hospital_platform.mercury.alarm.trigger.Trigger;
 import com.hospitalplatform.hospital_platform.mercury.logger.Logger;
 import com.hospitalplatform.hospital_platform.mercury.logger.impl.AuthLogger;
+import com.hospitalplatform.hospital_platform.mercury.logger.impl.DeviceLogger;
 import com.hospitalplatform.hospital_platform.mercury.logger.impl.LogSimulatorLogger;
 import com.hospitalplatform.hospital_platform.mercury.message.MessageBroker;
 import com.hospitalplatform.hospital_platform.repository.AlarmRepository;
@@ -26,7 +27,6 @@ public class MercuryConfig {
     public static String LONG_NO_ACTIVE_ALARM = "LONG_NO_ACTIVE_ALARM";
     public static String ERROR_ALARM = "ERROR_ALARM";
     public static String DOS_ALARM = "DOS_ALARM";
-
 
     @Autowired
     private AlarmRepository alarmRepository;
@@ -142,5 +142,18 @@ public class MercuryConfig {
         }});
         authLogger.subscribeBroker(this.createMessageBrokerInstance());
         return authLogger;
+    }
+
+    @Bean(name = "deviceLogger")
+    public Logger createDeviceLoggerInstance() {
+        DeviceLogger deviceLogger = new DeviceLogger(new LinkedHashMap<>() {{
+            put("IP", "[0-9.:]+");
+            put("P", "\\d+");
+            put("UBP", "\\d+");
+            put("LBP", "\\d+");
+            put("BT", "\\d+[.]\\d*");
+        }});
+        deviceLogger.subscribeBroker(this.createMessageBrokerInstance());
+        return deviceLogger;
     }
 }

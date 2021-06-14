@@ -4,10 +4,12 @@ import com.hospitalplatform.hospital_platform.dto.CertificateSigningRequestDTO;
 import com.hospitalplatform.hospital_platform.dto.DeviceDTO;
 import com.hospitalplatform.hospital_platform.exception.impl.InvalidAPIResponse;
 import com.hospitalplatform.hospital_platform.exception.impl.SQLConflict;
+import com.hospitalplatform.hospital_platform.mercury.logger.Logger;
 import com.hospitalplatform.hospital_platform.service.CertificateSigningRequestService;
 import com.hospitalplatform.hospital_platform.service.DeviceService;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +27,10 @@ public class DeviceController {
 
     @Autowired
     private CertificateSigningRequestService certificateSigningRequestService;
+
+    @Autowired
+    @Qualifier("deviceLogger")
+    private Logger deviceLogger;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') || (hasRole('DOCTOR') && hasAuthority('READ_DEVICES_PRIVILEGE'))")
@@ -48,7 +54,7 @@ public class DeviceController {
 
     @PostMapping("/receive")
     public ResponseEntity<?> receiveMessage(@RequestBody String message) {
-        System.out.println(message);
+        deviceLogger.writeMessage(message);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -15,13 +15,14 @@ services:
       - 8088:80
     depends_on:
       - product-server
-  # move to hospital_platform?
   hospital-server:
     build: ../hospital_platform
     volumes:
       - ../hospital_platform/ssl/keystore:/etc/ssl/certs/
       - ../hospital_platform/ssl/truststore:/etc/ssl/trust/
       - ../hospital_platform/ssl/ocsp:/etc/ssl/ocsp/
+    depends_on:
+      - couchbase-server
   nginx-hospital:
     build: ../hospital_platform/nginx
     volumes:
@@ -32,8 +33,16 @@ services:
       - 8081:443
     depends_on:
       - hospital-server
+  couchbase-server:
+    build: ../hospital_platform/couchbase
+    ports:
+      - 8000:8091
+    volumes:
+      - couchbase:/opt/couchbase/var
   mail-server:
     image: 'schickling/mailcatcher'
     ports:
     - 1025:1025
     - 1080:1080
+volumes:
+  couchbase:

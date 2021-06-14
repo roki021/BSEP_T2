@@ -134,4 +134,12 @@ public class Alarm extends BasicRule {
             newList.add(this.lastMessageKey);
         return String.format(this.alarmMessage, newList.toArray());
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getAlarmMessage() {
+        return alarmMessage;
+    }
 }
