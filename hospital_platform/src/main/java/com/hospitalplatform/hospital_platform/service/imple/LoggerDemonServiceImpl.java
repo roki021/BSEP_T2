@@ -28,7 +28,7 @@ public class LoggerDemonServiceImpl implements LoggerDemonService {
 
         this.addLogger(new LogSimulatorLogger(
                 1,
-                "..\\logger\\log1.txt",
+                "/etc/logger/log1.txt",
                 new LinkedHashMap<>() {{
                     put("username", "[a-zA-Z0-9]{3,50}");
                     put("ip", "[0-9.:]+");

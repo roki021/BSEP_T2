@@ -33,8 +33,14 @@ public class HospitalUser implements UserDetails {
     @Column(name = "last_password_reset_date")
     private Timestamp lastPasswordResetDate;
 
+    @Column(name = "lastaccess")
+    private Timestamp lastAccess;
+
     @Column(unique = true)
     private String email;
+
+    @Column
+    private boolean locked;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -71,6 +77,12 @@ public class HospitalUser implements UserDetails {
         this.email = email;
         this.roles = roles;
         this.privileges = privileges;
+        this.locked = false;
+        this.lastAccess = new Timestamp(System.currentTimeMillis());
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 
     public String getFirstName() {
@@ -158,7 +170,7 @@ public class HospitalUser implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !this.locked;
     }
 
     @Override
@@ -177,5 +189,13 @@ public class HospitalUser implements UserDetails {
 
     public void setPrivileges(Set<Privilege> privileges) {
         this.privileges = privileges;
+    }
+
+    public Timestamp getLastAccess() {
+        return lastAccess;
+    }
+
+    public void setLastAccess(Timestamp lastAccess) {
+        this.lastAccess = lastAccess;
     }
 }

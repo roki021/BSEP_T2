@@ -5,6 +5,7 @@ import com.hospitalplatform.hospital_platform.dto.LoginDTO;
 import com.hospitalplatform.hospital_platform.dto.UserTokenStateDTO;
 import com.hospitalplatform.hospital_platform.mercury.logger.Logger;
 import com.hospitalplatform.hospital_platform.service.AuthService;
+import com.hospitalplatform.hospital_platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -27,13 +28,42 @@ public class AuthController {
     private AuthService authService;
 
     @Autowired
+    private HospitalUserService hospitalUserService;
+
+    @Autowired
+    private BlacklistService blacklistService;
+
+    @Autowired
     @Qualifier("authLogger")
     private Logger logger;
 
     @PostMapping("/login")
-    public ResponseEntity<UserTokenStateDTO> login(
-            @RequestBody @Validated LoginDTO loginDTO, HttpServletResponse response, HttpServletRequest request) {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public ResponseEntity<UserTokenStateDTO> login(@RequestBody @Validated LoginDTO loginDTO, HttpServletResponse response, HttpServletRequest request) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        if (blacklistService.contains(request.getRemoteAddr())) {
+            logger.writeMessage(
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
+                            simpleDateFormat.format(new Date()),
+                            "api/login",
+                            "IPBLOCKED",
+                            loginDTO.getUsername(),
+                            request.getRemoteAddr()));
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
+        // quick
+        if (hospitalUserService.isUserLocked(loginDTO.getUsername())) {
+            logger.writeMessage(
+                    String.format("[WARNING] %s %s %s - username %s ip %s",
+                            simpleDateFormat.format(new Date()),
+                            "api/login",
+                            "LOGINLOCKED",
+                            loginDTO.getUsername(),
+                            request.getRemoteAddr()));
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
         IntermediateToken token = null;
         try {
             token = authService.loginUser(loginDTO);
@@ -53,14 +83,14 @@ public class AuthController {
 
         HttpHeaders headers = new HttpHeaders();
 
-        //TODO: fore debug "_Secure-Fgp=" + token.getFingerprint() + "; Path=/; HttpOnly" (change in filter also! __)
-            logger.writeMessage(
-                    String.format("[SUCCESS] %s %s %s- username %s ip %s",
-                            simpleDateFormat.format(new Date()),
-                            loginDTO.getUsername(),
-                            request.getRemoteAddr(),
-                            "api/login",
-                            "ID"));
+        hospitalUserService.updateLastAccess(loginDTO.getUsername());
+        logger.writeMessage(
+                String.format("[SUCCESS] %s %s %s - username %s ip %s",
+                        simpleDateFormat.format(new Date()),
+                        "api/login",
+                        "LOGINSUCCESS",
+                        loginDTO.getUsername(),
+                        request.getRemoteAddr()));
 
         headers.add(
                 "Set-Cookie",
