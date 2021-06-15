@@ -39,6 +39,7 @@ public class HospitalController {
         try {
             return new ResponseEntity(hospitalService.getHospitalMembers(hospitalId), HttpStatus.OK);
         } catch (Exception exception) {
+            exception.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
 

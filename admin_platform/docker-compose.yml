@@ -23,6 +23,7 @@ services:
       - ../hospital_platform/ssl/ocsp:/etc/ssl/ocsp/
       - ../logger/:/etc/logger/
       - ../hospital_logger_configs/:/etc/logger_configs/
+    restart: always
     depends_on:
       - couchbase-server
   nginx-hospital:

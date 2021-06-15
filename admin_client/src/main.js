@@ -51,6 +51,10 @@ const routes = [
       {
         path: 'hospitals/:id',
         component: Hospital
+      },
+      {
+        path: '',
+        component: Requests
       }
     ],
     beforeEnter: ifAuthenticated

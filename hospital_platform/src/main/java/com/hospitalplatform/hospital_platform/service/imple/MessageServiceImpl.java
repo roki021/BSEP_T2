@@ -17,7 +17,12 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message saveDeviceMessage(Message message) {
-        return messageRepository.save(message);
+        try {
+            return messageRepository.save(message);
+        } catch (Exception e) {
+            System.out.println("Error write.");
+            return message;
+        }
     }
 
     @Override
