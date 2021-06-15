@@ -1,17 +1,18 @@
 package com.admin.platform.dto;
 
+import com.admin.platform.validator.ValidPassword;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class LoginDTO {
-    @NotBlank(message = "Username is mandatory.")
+    @Pattern(regexp = "([a-zA-Z0-9]+){3,50}")
     private String username;
 
-    @NotBlank(message = "Password is mandatory.")
-    @Size(min=8, max=256, message = "Password should be between 8 and 256 characters.")
+    @ValidPassword
     private String password;
 
     public String getUsername() {

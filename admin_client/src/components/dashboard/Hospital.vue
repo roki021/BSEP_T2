@@ -310,7 +310,7 @@ export default {
     waitingResponse: false,
     waitingDeleteResponse: false,
     waitingUpdateResponse: false,
-    loggerConfigView: true,
+    loggerConfigView: false,
     loggers: [],
     waitingConfigResponse: false,
     logger: {

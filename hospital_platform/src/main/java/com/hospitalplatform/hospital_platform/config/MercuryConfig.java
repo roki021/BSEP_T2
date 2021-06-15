@@ -230,6 +230,15 @@ public class MercuryConfig {
         return authLogger;
     }
 
+    @Bean(name = "generalLogger")
+    public Logger createGeneralLoggerInstance() {
+        AuthLogger general = new AuthLogger(new LinkedHashMap<>() {{
+            put("ip", "[0-9.:]+");
+        }});
+        general.subscribeBroker(this.createMessageBrokerInstance());
+        return general;
+    }
+
     @Bean(name = "authSysLogger")
     public Logger createAuthSysLoggerInstance() {
         AuthLogger logger = new AuthLogger(new LinkedHashMap<>() {{
