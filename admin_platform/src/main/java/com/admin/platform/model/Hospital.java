@@ -23,13 +23,22 @@ public class Hospital {
     @Column
     private String communicationToken;
 
+    @Column
+    private String administrationEmail;
+
     public Hospital() {}
 
-    public Hospital(String endpoint, String organization, String organizationUnit, String communicationToken) {
+    public Hospital(
+            String endpoint,
+            String organization,
+            String organizationUnit,
+            String communicationToken,
+            String administrationEmail) {
         this.endpoint = endpoint;
         this.organization = organization;
         this.organizationUnit = organizationUnit;
         this.communicationToken = communicationToken;
+        this.administrationEmail = administrationEmail;
     }
 
     public Integer getId() {
@@ -70,5 +79,13 @@ public class Hospital {
 
     public void setCommunicationToken(String communicationToken) {
         this.communicationToken = communicationToken;
+    }
+
+    public String getAdministrationEmail() {
+        return administrationEmail;
+    }
+
+    public void setAdministrationEmail(String administrationEmail) {
+        this.administrationEmail = administrationEmail;
     }
 }

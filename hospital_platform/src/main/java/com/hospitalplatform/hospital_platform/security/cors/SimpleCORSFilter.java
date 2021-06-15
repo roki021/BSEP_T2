@@ -21,7 +21,9 @@ public class SimpleCORSFilter implements Filter {
 
         //TODO: take care
         String origin = request.getHeader("origin");
-        if (!origin.equals("https://localhost:3030") && !origin.equals("http://127.0.0.1:3030"))
+
+        if (!origin.equals("https://localhost:3030") &&
+                !origin.equals("http://127.0.0.1:3030") && !origin.equals("https://localhost:8080"))
             origin = "https://localhost:3030";
 
         response.setHeader("Access-Control-Allow-Origin", request.getHeader("origin"));

@@ -9,6 +9,10 @@
               >
                 Create new member
             </vs-button>
+            <vs-button style="float: right; margin-bottom: 10px;" v-on:click="showLoggerConfig()"
+              >
+                Logger configuration
+            </vs-button>
             <vs-table>
               <template #thead>
                 <vs-tr>
@@ -138,6 +142,70 @@
       </template>
     </vs-dialog>
 
+    <vs-dialog width="550px" v-model="loggerConfigView">
+      <template #header>
+        <h4 class="not-margin">Logger configuration</h4>
+      </template>
+      <div class="con-form">
+        <div class="center grid">
+          <vs-row>
+            <vs-col w="7">
+              <vs-row>
+                <vs-col>
+                  <div class="wrapper">
+                    <vs-input dark v-model.trim="logger.logPath" placeholder="Log path" />
+                  </div>
+                </vs-col>
+              </vs-row>
+              <vs-row>
+                <vs-col>
+                  <div class="wrapper">
+                    <vs-input dark type="number" v-model.trim="logger.readPeriod" placeholder="Read frequence" />
+                  </div>
+                </vs-col>
+              </vs-row>
+              <vs-row v-for="(item,index) in logger.params" v-bind:key="index">
+                <vs-col w="5">
+                    <div class="wrapper">
+                      <vs-input :disabled="index < logger.params.length - 1" dark v-model.trim="item.name" placeholder="Name" />
+                    </div>
+                </vs-col>
+                <vs-col w="5">
+                  <div class="wrapper">
+                      <vs-input dark :disabled="index < logger.params.length - 1" v-model="item.regex" placeholder="Regex" />
+                    </div>
+                </vs-col>
+              </vs-row>
+              <vs-row>
+                <div class="wrapper">
+                  <vs-button style="float: right;" v-on:click="addParam()">Add param</vs-button>
+                  <vs-button :disabled="!validLogger" style="float: right;" v-on:click="addLogger()">Add logger</vs-button>
+                </div>
+              </vs-row>
+            </vs-col>
+            <vs-col w="5">
+                <div class="wrapper">
+                  <div style="padding: 0px 10px 0 10px;">
+                    <ul>
+                      <li v-for="(item,index) in loggers" :key="index">{{ item.logPath }}</li>
+                    </ul>
+                  </div>
+                </div>
+            </vs-col>
+          </vs-row>
+        </div>
+        <template>
+        <div class="footer-dialog">
+          <vs-row>
+            <vs-col>
+              <vs-button :disabled="!validLoggers" :loading="waitingConfigResponse" block v-on:click="sendConfiguration()"> Send loggers configuration </vs-button>
+            </vs-col>
+          </vs-row>
+        </div>
+      </template>
+      </div>
+    </vs-dialog>
+
     <vs-dialog v-model="activeEdit">
       <template #header>
         <h4 class="not-margin">Hospital member details</h4>
@@ -233,7 +301,7 @@
 import axios from 'axios'
 export default {
   data: () => ({
-    organization: 'Organization name',
+    organization: 'Hospital',
     hospitalMembers: [],
     hospitalId: null,
     activeNew: false,
@@ -242,6 +310,20 @@ export default {
     waitingResponse: false,
     waitingDeleteResponse: false,
     waitingUpdateResponse: false,
+    loggerConfigView: true,
+    loggers: [],
+    waitingConfigResponse: false,
+    logger: {
+      logPath: '',
+      readPeriod: '',
+      params: [
+        {
+          name: '',
+          regex: ''
+        }
+      ]
+
+    },
     hospitalMember: {
       firstName: '',
       lastName: '',
@@ -290,10 +372,76 @@ export default {
       ]
     }
   }),
+  computed: {
+    validLogger: function () {
+      return this.logger.logPath.length > 0 && this.logger.readPeriod.length > 0 && this.logger.params.length > 1
+    },
+    validLoggers: function () {
+      return this.loggers.length > 0
+    }
+  },
   mounted() {
       this.getMembers()
   },
   methods: {
+    sendConfiguration() {
+      this.waitingConfigResponse = true
+      for (var l of this.loggers) {
+        l.params.pop()
+      }
+      axios
+      .post(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}`, { loggers: this.loggers })
+      .then(() => {
+        this.logger.logPath = ''
+        this.logger.readPeriod = ''
+        this.loggers.params = [
+          {
+            name: '',
+            regex: ''
+          }
+        ]
+        this.waitingConfigResponse = false
+        this.loggerConfigView = false
+      })
+      .catch(() => {
+          this.waitingResponse = false
+          this.$vs.notification({
+              color: 'danger',
+              position: null,
+              title: 'Oups!',
+              text: 'Something went wrong, please try again.'
+          })
+          this.waitingConfigResponse = false
+        })
+    },
+    addLogger() {
+      this.loggers.push({...this.logger})
+      this.logger.logPath = ''
+      this.logger.readPeriod = ''
+      this.logger.params = [{
+          name: '',
+          regex: ''
+        }]
+      console.log(this.loggers)
+    },
+    addParam() {
+      this.logger.params.push(
+        {
+          name: '',
+          regex: ''
+        }
+      )
+    },
+    showLoggerConfig() {
+      this.logger.logPath = ''
+      this.logger.readPeriod = ''
+      this.logger.params = [{
+          name: '',
+          regex: ''
+        }]
+      this.loggers = []
+      this.loggerConfigView = true
+    },
     showCreate() {
       this.activeNew = true
 

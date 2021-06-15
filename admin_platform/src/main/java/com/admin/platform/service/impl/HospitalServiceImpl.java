@@ -1,24 +1,28 @@
 package com.admin.platform.service.impl;
 
-import com.admin.platform.dto.HospitalDTO;
-import com.admin.platform.dto.HospitalUserDTO;
-import com.admin.platform.dto.NewMemberDTO;
-import com.admin.platform.dto.RoleUpdateDTO;
+import com.admin.platform.dto.*;
 import com.admin.platform.mapper.HospitalMapper;
 import com.admin.platform.model.Hospital;
 import com.admin.platform.repository.HospitalRepository;
 import com.admin.platform.service.HospitalService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestTemplate;
 
+import javax.mail.internet.MimeMessage;
 import javax.management.relation.Role;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +37,9 @@ public class HospitalServiceImpl implements HospitalService {
     @Autowired
     @Qualifier("ignoreSSLConfig")
     private RestTemplate restTemplate;
+
+    @Autowired
+    private JavaMailSender mailSender;
 
     @Override
     public List<HospitalDTO> getHospitals() {
@@ -50,6 +57,7 @@ public class HospitalServiceImpl implements HospitalService {
 
         String requestUrl = String.format("http://%s/api/external/members", hospitalDTO.get().getEndpoint());
         HttpHeaders headers = new HttpHeaders();
+        headers.add("origin", "https://localhost:8080");
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
         ResponseEntity<HospitalUserDTO[]> responseEntity =
@@ -72,6 +80,7 @@ public class HospitalServiceImpl implements HospitalService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
+        headers.add("origin", "https://localhost:8080");
         HttpEntity<NewMemberDTO> request = new HttpEntity<>(memberDTO, headers);
         String requestUrl = String.format("http://%s/api/external/members", hospitalDTO.get().getEndpoint());
         restTemplate.postForLocation(requestUrl, request);
@@ -87,6 +96,7 @@ public class HospitalServiceImpl implements HospitalService {
         String requestUrl = String.format(
                 "http://%s/api/external/members/%d", hospitalDTO.get().getEndpoint(), memberId);
         HttpHeaders headers = new HttpHeaders();
+        headers.add("origin", "https://localhost:8080");
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
         restTemplate.exchange(requestUrl, HttpMethod.DELETE, entity, Object.class);
@@ -101,10 +111,40 @@ public class HospitalServiceImpl implements HospitalService {
             throw new Exception("Hospital does not exist.");
 
         HttpHeaders headers = new HttpHeaders();
+        headers.add("origin", "https://localhost:8080");
         headers.add("X-sudo-key", hospitalDTO.get().getCommunicationToken());
         HttpEntity<RoleUpdateDTO> request = new HttpEntity<>(newRole, headers);
         String requestUrl = String.format(
                 "http://%s/api/external/members/%d/roles", hospitalDTO.get().getEndpoint(), memberId);
         restTemplate.put(requestUrl, request);
+    }
+
+    @Override
+    public void sendLoggerConfigurationToAdministration(Integer hospitalId, @Validated LoggersDTO loggersDTO) throws Exception {
+        Optional<Hospital> hospital = hospitalRepository.findById(hospitalId);
+
+        if (hospital.isEmpty())
+            throw new Exception("No email.");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String loggers = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(loggersDTO);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            try {
+                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+                helper.setFrom("cultoffer@gmail.com");
+                helper.setTo(hospital.get().getAdministrationEmail());
+                helper.setSubject("Logger simulator configuration");
+                helper.setText("Here is your logger simulator configuration.");
+                helper.addAttachment("logger_config.json",
+                        new ByteArrayResource(loggers.getBytes(StandardCharsets.UTF_8)));
+                mailSender.send(mimeMessage);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 }
