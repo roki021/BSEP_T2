@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 @Service
@@ -25,34 +26,14 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public PrivateKey readPrivateKey(String keyStorePath, String keyStorePass, String alias) {
+    public X509Certificate readCertificate(String certificatePath) {
         try {
-            KeyStore ks = KeyStore.getInstance("JKS", "SUN");
-            BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStorePath));
-            ks.load(in, keyStorePass.toCharArray());
-
-            if (ks.isKeyEntry(alias)) {
-                return (PrivateKey) ks.getKey(alias, keyStorePass.toCharArray());
-            }
-        } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException
-                | IOException | UnrecoverableKeyException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public X509Certificate readCertificate(String keyStorePath, String keyStorePass, String alias) {
-        try {
-            KeyStore ks = KeyStore.getInstance("JKS", "SUN");
-            BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStorePath));
-            ks.load(in, keyStorePass.toCharArray());
-
-            if (ks.isKeyEntry(alias) || ks.isCertificateEntry(alias)) {
-                return (X509Certificate) ks.getCertificate(alias);
-            }
-        } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException
-                | IOException e) {
+            CertificateFactory fact = CertificateFactory.getInstance("X.509");
+            FileInputStream is = new FileInputStream (certificatePath);
+            X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
+            is.close();
+            return cer;
+        } catch (CertificateException| IOException e) {
             e.printStackTrace();
         }
         return null;

@@ -39,6 +39,7 @@ ocsp_revoked = False
 PULSE_STATE = Scale.MEDIUM
 PRESSURE_STATE = Scale.MEDIUM
 TEMP_STATE = Scale.MEDIUM
+TOKEN = None
 
 def generateKeys():
     return rsa.generate_private_key(
@@ -134,7 +135,7 @@ def check_ocsp():
 
 def send_message(message):
     try:
-        send_request(HOSPITAL_HOST, HOSPITAL_PORT, ENDPOINT, 'POST', message, API_CRT, API_KEY, API_CA_T, False)
+        send_request(HOSPITAL_HOST, HOSPITAL_PORT, ENDPOINT, 'POST', TOKEN, message, API_CRT, API_KEY, API_CA_T, False)
     except Exception as ex:
         print(ex)
 
@@ -144,7 +145,11 @@ app = Flask(__name__)
 
 @app.route('/csr',  methods=['POST'])
 def send_public_key():
+    global TOKEN
     json_data = flask.request.json
+    TOKEN = flask.request.headers.get('Token')
+    with open("token.txt", "w") as token_file:
+        token_file.write(TOKEN)
     try:
         return create_CSR(json_data)
     except:
@@ -158,6 +163,8 @@ if __name__ == '__main__':
         API_PORT = int(sys.argv[1])
     if check_if_cert_present():
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        with open("token.txt", "r") as token_file:
+            TOKEN = token_file.read()
         if VERIFY_USER:
             context.verify_mode = ssl.CERT_OPTIONAL
             context.load_verify_locations(API_CA_T)

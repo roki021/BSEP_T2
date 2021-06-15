@@ -83,7 +83,7 @@ export default {
       postman
         .post(
           `${process.env.VUE_APP_HOSPITAL_API}/certificate-signing-requests`,
-          this.requestData
+          this.requestData, {withCredentials: true}
         )
         .then(() => {
           this.sending = false;

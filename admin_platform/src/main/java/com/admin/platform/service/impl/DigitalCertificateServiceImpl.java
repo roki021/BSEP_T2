@@ -10,6 +10,8 @@ import com.admin.platform.repository.HospitalRepository;
 import com.admin.platform.repository.RevokedCertificateRepository;
 import com.admin.platform.service.CertificateSigningRequestService;
 import com.admin.platform.service.DigitalCertificateService;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -224,7 +226,6 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
                 certGen.addExtension(Extension.basicConstraints, false, new BasicConstraints(true));
 
-
                 byte[] subjectKeyIdentifier = new JcaX509ExtensionUtils()
                         .createSubjectKeyIdentifier(subjectData.getPublicKey()).getKeyIdentifier();
 
@@ -320,7 +321,7 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
         StringWriter caCertWriter = new StringWriter();
         pm = new JcaPEMWriter(caCertWriter);
-        pm.writeObject(certificate);
+        pm.writeObject(caCertificate);
         pm.close();
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();

@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DeviceRepository extends JpaRepository<Device, Integer> {
     Device findByIpAddressAndPort(String ipAddress, int port);
+
+    Device findByToken(String token);
 }

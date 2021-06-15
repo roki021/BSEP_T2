@@ -12,15 +12,13 @@ import com.hospitalplatform.hospital_platform.service.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DeviceServiceImpl implements DeviceService {
@@ -87,8 +85,12 @@ public class DeviceServiceImpl implements DeviceService {
         }
     }
 
+    @Override
+    public boolean isValidToken(String token) {
+        return deviceRepository.findByToken(token) != null;
+    }
+
     private byte[] connectWithDevice(CertificateSigningRequestDTO csrDto, boolean isNew) throws InvalidAPIResponse {
-        HttpEntity<CertificateSigningRequestDTO> request = new HttpEntity<>(csrDto);
         RestTemplate restTemplate;
         String endpoint;
         if(isNew) {
@@ -101,6 +103,10 @@ public class DeviceServiceImpl implements DeviceService {
             endpoint = "https://" + csrDto.getCommonName() + "/csr";
         }
         try {
+            String token = UUID.randomUUID().toString();
+            HttpHeaders headers = new HttpHeaders();
+            HttpEntity<CertificateSigningRequestDTO> request = new HttpEntity<>(csrDto, headers);
+            headers.add("Token", token);
             ResponseEntity<byte[]> resp = restTemplate.exchange(
                     endpoint,
                     HttpMethod.POST,
@@ -108,6 +114,12 @@ public class DeviceServiceImpl implements DeviceService {
                     byte[].class);
 
             resp.getStatusCode();
+            String[] splitedCommonName = csrDto.getCommonName().split(":");
+            Device d = deviceRepository.findByIpAddressAndPort(
+                    splitedCommonName[0], Integer.parseInt(splitedCommonName[1])
+            );
+            d.setToken(token);
+            deviceRepository.save(d);
             return resp.getBody();
         } catch (HttpClientErrorException exception) {
             throw new InvalidAPIResponse("Invalid API response.");

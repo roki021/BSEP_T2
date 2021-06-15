@@ -17,4 +17,6 @@ public interface DeviceService {
                                               CSRAutofillDataDTO autofillData);
 
     void forwardRequest(CertificateSigningRequestDTO csrDto, boolean isNew) throws InvalidAPIResponse;
+
+    boolean isValidToken(String token);
 }

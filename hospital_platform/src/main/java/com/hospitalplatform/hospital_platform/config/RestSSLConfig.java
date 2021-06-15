@@ -28,20 +28,11 @@ import java.security.cert.X509Certificate;
 @EnableScheduling
 public class RestSSLConfig {
 
-    @Value("${hospital.keystore.filepath}")
-    private String keyStorePath;
+    @Value("${hospital.certificate.filepath}")
+    private String myCertificatePath;
 
-    @Value("${hospital.truststore.filepath}")
-    private String trustStorePath;
-
-    @Value("${hospital.truststore.password}")
-    private String trustStorePassword;
-
-    @Value("${hospital.keystore.password}")
-    private String keyStorePassword;
-
-    @Value("${hospital.keystore.password}")
-    private String keyPassword;
+    @Value("${hospital.trust.filepath}")
+    private String trustCertificatePath;
 
     @Value("${admin_platform.ocsp_url}")
     private String ocspUrl;
@@ -55,7 +46,7 @@ public class RestSSLConfig {
     @Autowired
     private CertificateService certificateService;
 
-    @Bean(name = "twoWaySSLConfig")
+    /*@Bean(name = "twoWaySSLConfig")
     public RestTemplate restTemplateMutual() throws Exception {
         KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
         File initialFile = new File(keyStorePath);
@@ -84,7 +75,7 @@ public class RestSSLConfig {
         requestFactory.setConnectionRequestTimeout(10000);
 
         return new RestTemplate(requestFactory);
-    }
+    }*/
 
     @Bean(name = "ignoreSSLConfig")
     public RestTemplate restTemplateNoop() throws Exception {
@@ -104,18 +95,18 @@ public class RestSSLConfig {
     }
 
     @Scheduled(cron = "*/31 * * * * *")
-    public void scheduleTaskUsingCronExpression() throws Exception {
-        RestTemplate restTemplate = new RestTemplate(); // no https because ocsp request is on http
-        X509Certificate cert = certificateService.readCertificate(
-                keyStorePath, keyStorePassword, "hospital"
-        );
-        X509Certificate issuerCert = certificateService.readCertificate(
-                trustStorePath, trustStorePassword, "ca-cert"
-        );
-        byte[] reqEncoded = ocspService.generateOCSPRequestEncoded(cert, issuerCert);
-        ResponseEntity<byte[]> resp = restTemplate.postForEntity(ocspUrl, reqEncoded, byte[].class);
+    public void scheduleTaskUsingCronExpression(){
+        try {
+            RestTemplate restTemplate = new RestTemplate(); // no https because ocsp request is on http
+            X509Certificate cert = certificateService.readCertificate(myCertificatePath);
+            X509Certificate issuerCert = certificateService.readCertificate(trustCertificatePath);
+            byte[] reqEncoded = ocspService.generateOCSPRequestEncoded(cert, issuerCert);
+            ResponseEntity<byte[]> resp = restTemplate.postForEntity(ocspUrl, reqEncoded, byte[].class);
 
-        FileOutputStream output = new FileOutputStream(ocspPath);
-        IOUtils.write(resp.getBody(), output);
+            FileOutputStream output = new FileOutputStream(ocspPath);
+            IOUtils.write(resp.getBody(), output);
+        } catch (Exception exception) {
+            System.out.println(exception.getMessage());
+        }
     }
 }

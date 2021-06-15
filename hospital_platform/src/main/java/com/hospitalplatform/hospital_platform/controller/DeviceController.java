@@ -53,8 +53,13 @@ public class DeviceController {
     }
 
     @PostMapping("/receive")
-    public ResponseEntity<?> receiveMessage(@RequestBody String message) {
-        deviceLogger.writeMessage(message);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<?> receiveMessage(
+            @RequestBody String message, @RequestHeader("Token") String token) {
+        if(deviceService.isValidToken(token)) {
+            deviceLogger.writeMessage(message);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }

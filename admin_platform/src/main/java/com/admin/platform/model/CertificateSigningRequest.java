@@ -11,7 +11,7 @@ public class CertificateSigningRequest {
     @GeneratedValue(strategy = GenerationType.TABLE, generator = "CSR_GEN")
     private Long id;
 
-    @Column(unique = true)
+    @Column
     private String commonName;
 
     @Column

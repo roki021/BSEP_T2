@@ -12,6 +12,7 @@ def send_request(
     port,
     endpoint,
     method,
+    token,
     data=None,
     cert=None,
     key=None,
@@ -34,7 +35,7 @@ def send_request(
         conn.request_ocsp()
     conn.send(bytes(
         f"{method} {endpoint} HTTP/1.1\nHost: {host}:{port}\n" + 
-        f"Content-Type: text/plain\norigin: https://{host}:{port}\nContent-Length: {len(data)}\n\n{data}", encoding="utf8"
+        f"Content-Type: text/plain\norigin: https://{host}:{port}\nToken: {token}\nContent-Length: {len(data)}\n\n{data}", encoding="utf8"
     ))
     response = conn.read(2048)
     conn.close()

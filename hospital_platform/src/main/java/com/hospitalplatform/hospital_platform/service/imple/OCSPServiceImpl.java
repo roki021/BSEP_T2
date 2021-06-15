@@ -30,12 +30,6 @@ import java.security.cert.X509Certificate;
 @Service
 public class OCSPServiceImpl implements OCSPService {
 
-    @Value("${hospital.keystore.filepath}")
-    private String keyStoreFile;
-
-    @Value("${hospital.keystore.password}")
-    private String keyStorePass;
-
     @Autowired
     private CertificateService certificateService;
 

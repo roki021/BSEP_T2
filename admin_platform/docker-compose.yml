@@ -33,6 +33,7 @@ services:
       - ../hospital_platform/ssl/ocsp:/etc/ssl/ocsp/
     ports:
       - 8081:443
+      - 7081:442
     depends_on:
       - hospital-server
   couchbase-server:

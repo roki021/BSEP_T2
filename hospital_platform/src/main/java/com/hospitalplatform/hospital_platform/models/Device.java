@@ -19,6 +19,9 @@ public class Device {
     @Column
     private int port;
 
+    @Column
+    private String token;
+
     public Device() {}
 
     public Device(String commonName, String ipAddress, int port) {
@@ -53,5 +56,13 @@ public class Device {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

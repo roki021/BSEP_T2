@@ -249,11 +249,12 @@ export default {
       this.isHidden = true;
     },
     toDate(unixtime) {
+      console.log(unixtime);
       let date = new Date(unixtime);
       let hour = date.getHours();
       let min = date.getMinutes();
-      let day = date.getDay();
-      let month = date.getMonth();
+      let day = date.getDate();
+      let month = date.getMonth() + 1;
 
       if (hour < 10) hour = "0" + hour;
       if (min < 10) min = "0" + min;
