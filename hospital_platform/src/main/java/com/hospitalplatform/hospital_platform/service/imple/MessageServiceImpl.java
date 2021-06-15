@@ -20,7 +20,6 @@ public class MessageServiceImpl implements MessageService {
         try {
             return messageRepository.save(message);
         } catch (Exception e) {
-            System.out.println("Error write.");
             return message;
         }
     }
