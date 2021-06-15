@@ -121,4 +121,19 @@ public class AlarmController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("{id}/notifications")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+    public ResponseEntity<?> getAllAlarmNotification(
+            @PathVariable Integer id, HttpServletRequest request) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        logger.writeMessage(
+                String.format("[INFO] %s %s %s - ip %s",
+                        simpleDateFormat.format(new Date()),
+                        "api/alarms/" + id + "/notifications",
+                        "GETALARMNOTIFICATIONS",
+                        request.getRemoteAddr()));
+
+        return new ResponseEntity<>(alarmService.getAlarmNotifications(id), HttpStatus.OK);
+    }
 }

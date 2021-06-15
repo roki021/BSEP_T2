@@ -40,6 +40,10 @@ public class Alarm extends BasicRule {
     @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true,  mappedBy = "id")
     private Map<String, Trigger> triggers;
 
+    @OneToMany
+    @JoinColumn(name = "alarm_id") // we need to duplicate the physical information
+    private List<Notification> notifications;
+
     @Transient
     private Historian historian;
 
@@ -190,5 +194,13 @@ public class Alarm extends BasicRule {
 
     public void setNewEra(Long newEra) {
         this.newEra = newEra;
+    }
+
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void addNotification(Notification notification) {
+        this.notifications.add(notification);
     }
 }

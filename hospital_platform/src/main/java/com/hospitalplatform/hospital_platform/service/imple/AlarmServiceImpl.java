@@ -1,10 +1,12 @@
 package com.hospitalplatform.hospital_platform.service.imple;
 
 import com.hospitalplatform.hospital_platform.dto.AlarmDTO;
+import com.hospitalplatform.hospital_platform.dto.NotificationDTO;
 import com.hospitalplatform.hospital_platform.exception.impl.SQLConflict;
 import com.hospitalplatform.hospital_platform.exception.impl.UnexpectedSituation;
 import com.hospitalplatform.hospital_platform.mapper.AlarmMapper;
 import com.hospitalplatform.hospital_platform.mercury.alarm.Alarm;
+import com.hospitalplatform.hospital_platform.mercury.alarm.Notification;
 import com.hospitalplatform.hospital_platform.mercury.alarm.trigger.Trigger;
 import com.hospitalplatform.hospital_platform.mercury.message.MessageBroker;
 import com.hospitalplatform.hospital_platform.repository.AlarmRepository;
@@ -13,10 +15,7 @@ import com.hospitalplatform.hospital_platform.service.AlarmService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class AlarmServiceImpl implements AlarmService {
@@ -80,5 +79,25 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public List<AlarmDTO> getAllByTags(int activationTags) {
         return alarmMapper.toDtos(alarmRepository.findAllByActivationTags(activationTags));
+    }
+
+    @Override
+    public List<NotificationDTO> getAlarmNotifications(Integer alarmId) {
+        List<NotificationDTO> notifications = new ArrayList<>();
+        Optional<Alarm> alarm = alarmRepository.findById((long)alarmId);
+        if(alarm.isPresent()) {
+            for(Notification notification : alarm.get().getNotifications()) {
+                NotificationDTO dto = new NotificationDTO();
+                dto.setId(notification.getId());
+                dto.setMessage(notification.getMessage());
+                dto.setChecked(notification.isChecked());
+                dto.setTime(notification.getTime().getTime());
+                notifications.add(dto);
+            }
+
+            return notifications;
+        }
+
+        return null;
     }
 }

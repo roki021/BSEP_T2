@@ -1,6 +1,7 @@
 package com.hospitalplatform.hospital_platform.config;
 
 import com.hospitalplatform.hospital_platform.mercury.alarm.Alarm;
+import com.hospitalplatform.hospital_platform.mercury.alarm.Notification;
 import com.hospitalplatform.hospital_platform.mercury.alarm.constants.ActivationTag;
 import com.hospitalplatform.hospital_platform.mercury.alarm.constants.Relation;
 import com.hospitalplatform.hospital_platform.mercury.alarm.trigger.Trigger;
@@ -11,6 +12,7 @@ import com.hospitalplatform.hospital_platform.mercury.logger.impl.LogSimulatorLo
 import com.hospitalplatform.hospital_platform.mercury.message.MessageBroker;
 import com.hospitalplatform.hospital_platform.models.HospitalUser;
 import com.hospitalplatform.hospital_platform.repository.AlarmRepository;
+import com.hospitalplatform.hospital_platform.repository.NotificationRepository;
 import com.hospitalplatform.hospital_platform.repository.TriggerRepository;
 import com.hospitalplatform.hospital_platform.service.BlacklistService;
 import com.hospitalplatform.hospital_platform.service.HospitalUserService;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -48,6 +51,9 @@ public class MercuryConfig {
 
     @Autowired
     private TriggerRepository triggerRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @Bean
     public MessageBroker createMessageBrokerInstance() {
@@ -78,6 +84,12 @@ public class MercuryConfig {
                     "Access from blacklisted address. (ip %s)",
                     (alarm) -> {
                         System.out.println(alarm.message());
+                        alarm.addNotification(this.notificationRepository.save(
+                                new Notification(
+                                        alarm.message(), new Timestamp(new Date().getTime()), alarm
+                                )
+                        ));
+                        alarmRepository.save(alarm);
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
@@ -98,7 +110,13 @@ public class MercuryConfig {
                     MercuryConfig.DOS_ALARM,
                     "System is under DoS attack.",
                     (alarm) -> {
-                        System.out.println(alarm.message().toUpperCase());
+                        System.out.println(alarm.message());
+                        alarm.addNotification(this.notificationRepository.save(
+                                new Notification(
+                                        alarm.message(), new Timestamp(new Date().getTime()), alarm
+                                )
+                        ));
+                        alarmRepository.save(alarm);
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.DEVICE.getTag(),
                     new LinkedHashMap<>() {{
@@ -119,6 +137,12 @@ public class MercuryConfig {
                     "Error pops up!",
                     (alarm) -> {
                         System.out.println(alarm.message());
+                        alarm.addNotification(this.notificationRepository.save(
+                                new Notification(
+                                        alarm.message(), new Timestamp(new Date().getTime()), alarm
+                                )
+                        ));
+                        alarmRepository.save(alarm);
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.DEVICE.getTag(),
                     new LinkedHashMap<>() {{
@@ -138,8 +162,15 @@ public class MercuryConfig {
                     MercuryConfig.LONG_NO_ACTIVE_ALARM,
                     "User active again after \"90 days\". (username %s)",
                     (alarm) -> {
-                        if (alarm.getMessagesDiff() > 20L)
-                        System.out.println(alarm.message());
+                        if (alarm.getMessagesDiff() > 20L) {
+                            System.out.println(alarm.message());
+                            alarm.addNotification(this.notificationRepository.save(
+                                    new Notification(
+                                            alarm.message(), new Timestamp(new Date().getTime()), alarm
+                                    )
+                            ));
+                            alarmRepository.save(alarm);
+                        }
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
@@ -161,6 +192,12 @@ public class MercuryConfig {
                     "User is failing to login for many times. (username %s)",
                     (alarm) -> {
                         System.out.println(alarm.message());
+                        alarm.addNotification(this.notificationRepository.save(
+                                new Notification(
+                                        alarm.message(), new Timestamp(new Date().getTime()), alarm
+                                )
+                        ));
+                        alarmRepository.save(alarm);
                         hospitalUserService.lockUser(alarm.getTrackingKey());
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
@@ -182,6 +219,12 @@ public class MercuryConfig {
                     "User is failing to login for many times from the same source. (ip %s)",
                     (alarm) -> {
                         System.out.println(alarm.message());
+                        alarm.addNotification(this.notificationRepository.save(
+                                new Notification(
+                                        alarm.message(), new Timestamp(new Date().getTime()), alarm
+                                )
+                        ));
+                        alarmRepository.save(alarm);
                         blacklistService.addIP(alarm.getTrackingKey());
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
@@ -203,6 +246,7 @@ public class MercuryConfig {
                     "User successfully authenticated.",
                     (alarm) -> {
                         // I'm quiet
+                        System.out.println(alarm.message());
                         loginAlarm.resetAlarm(alarm.getTrackingKey());
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
