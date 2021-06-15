@@ -98,13 +98,13 @@ public class MercuryConfig {
                     MercuryConfig.DOS_ALARM,
                     "System is under DoS attack.",
                     (alarm) -> {
-                        System.out.println(alarm.message());
+                        System.out.println(alarm.message().toUpperCase());
                     },
-                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
+                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.DEVICE.getTag(),
                     new LinkedHashMap<>() {{
-                        put("status", triggerRepository.save(new Trigger(2L, Relation.CONTAINS, "SUCCESS,ERROR,INFO,WARN")));
+                        put("status", triggerRepository.save(new Trigger(2L, Relation.CONTAINS, "SUCCESS,ERROR,INFO,WARNING")));
                     }},
-                    60, 1L);
+                    30, 1L);
             this.alarmRepository.save(dosAlarm);
             messageBroker.addAlarm(dosAlarm);
         } else {
@@ -166,6 +166,7 @@ public class MercuryConfig {
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
                         put("status", triggerRepository.save(new Trigger(6L, Relation.EQ, "WARNING")));
+                        put("identifier", triggerRepository.save(new Trigger(7L, Relation.EQ, "NULLTOKEN")));
                     }},
                     3, 3600L, "username");
             this.alarmRepository.save(loginAlarm);
@@ -185,7 +186,7 @@ public class MercuryConfig {
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("identifier", triggerRepository.save(new Trigger(7L, Relation.CONTAINS, "LOGINFAIL,LOGINLOCKED")));
+                        put("identifier", triggerRepository.save(new Trigger(8L, Relation.CONTAINS, "LOGINFAIL,LOGINLOCKED")));
                     }},
                     6, 3600L, "ip");
             this.alarmRepository.save(ipFailAuthAlarm);
@@ -206,7 +207,7 @@ public class MercuryConfig {
                     },
                     ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
                     new LinkedHashMap<>() {{
-                        put("identifier", triggerRepository.save(new Trigger(8L, Relation.EQ, "LOGINSUCCESS")));
+                        put("identifier", triggerRepository.save(new Trigger(9L, Relation.EQ, "LOGINSUCCESS")));
                     }},
                     1, Long.MAX_VALUE, "username");
             this.alarmRepository.save(silentSuccessAlarm);
