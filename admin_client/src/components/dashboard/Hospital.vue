@@ -153,21 +153,21 @@
               <vs-row>
                 <vs-col>
                   <div class="wrapper">
-                    <vs-input dark v-model="logger.path" placeholder="Log path" />
+                    <vs-input dark v-model.trim="logger.logPath" placeholder="Log path" />
                   </div>
                 </vs-col>
               </vs-row>
               <vs-row>
                 <vs-col>
                   <div class="wrapper">
-                    <vs-input dark v-model="logger.readFrequence" placeholder="Read frequence" />
+                    <vs-input dark type="number" v-model.trim="logger.readPeriod" placeholder="Read frequence" />
                   </div>
                 </vs-col>
               </vs-row>
               <vs-row v-for="(item,index) in logger.params" v-bind:key="index">
                 <vs-col w="5">
                     <div class="wrapper">
-                      <vs-input :disabled="index < logger.params.length - 1" dark v-model="item.name" placeholder="Name" />
+                      <vs-input :disabled="index < logger.params.length - 1" dark v-model.trim="item.name" placeholder="Name" />
                     </div>
                 </vs-col>
                 <vs-col w="5">
@@ -179,16 +179,18 @@
               <vs-row>
                 <div class="wrapper">
                   <vs-button style="float: right;" v-on:click="addParam()">Add param</vs-button>
-                  <vs-button style="float: right;" v-on:click="addLogger()">Add logger</vs-button>
+                  <vs-button :disabled="!validLogger" style="float: right;" v-on:click="addLogger()">Add logger</vs-button>
                 </div>
               </vs-row>
             </vs-col>
-            <vs-col w="3">
-              <div class="wrapper">
-                <ul>
-                  <li v-for="(item,index) in loggers" :key="index">{{ item.path }}</li>
-                </ul>
-              </div>
+            <vs-col w="5">
+                <div class="wrapper">
+                  <div style="padding: 0px 10px 0 10px;">
+                    <ul>
+                      <li v-for="(item,index) in loggers" :key="index">{{ item.logPath }}</li>
+                    </ul>
+                  </div>
+                </div>
             </vs-col>
           </vs-row>
         </div>
@@ -196,7 +198,7 @@
         <div class="footer-dialog">
           <vs-row>
             <vs-col>
-              <vs-button :loading="waitingUpdateResponse" block v-on:click="updateMember()"> Send loggers configuration </vs-button>
+              <vs-button :disabled="!validLoggers" :loading="waitingConfigResponse" block v-on:click="sendConfiguration()"> Send loggers configuration </vs-button>
             </vs-col>
           </vs-row>
         </div>
@@ -309,11 +311,11 @@ export default {
     waitingDeleteResponse: false,
     waitingUpdateResponse: false,
     loggerConfigView: true,
-    value5: '',
     loggers: [],
+    waitingConfigResponse: false,
     logger: {
-      path: '',
-      readFrequence: '',
+      logPath: '',
+      readPeriod: '',
       params: [
         {
           name: '',
@@ -370,14 +372,52 @@ export default {
       ]
     }
   }),
+  computed: {
+    validLogger: function () {
+      return this.logger.logPath.length > 0 && this.logger.readPeriod.length > 0 && this.logger.params.length > 1
+    },
+    validLoggers: function () {
+      return this.loggers.length > 0
+    }
+  },
   mounted() {
       this.getMembers()
   },
   methods: {
+    sendConfiguration() {
+      this.waitingConfigResponse = true
+      for (var l of this.loggers) {
+        l.params.pop()
+      }
+      axios
+      .post(`${process.env.VUE_APP_ADMIN_API}/hospitals/${this.$route.params.id}`, { loggers: this.loggers })
+      .then(() => {
+        this.logger.logPath = ''
+        this.logger.readPeriod = ''
+        this.loggers.params = [
+          {
+            name: '',
+            regex: ''
+          }
+        ]
+        this.waitingConfigResponse = false
+        this.loggerConfigView = false
+      })
+      .catch(() => {
+          this.waitingResponse = false
+          this.$vs.notification({
+              color: 'danger',
+              position: null,
+              title: 'Oups!',
+              text: 'Something went wrong, please try again.'
+          })
+          this.waitingConfigResponse = false
+        })
+    },
     addLogger() {
       this.loggers.push({...this.logger})
-      this.logger.path = ''
-      this.logger.readFrequence = ''
+      this.logger.logPath = ''
+      this.logger.readPeriod = ''
       this.logger.params = [{
           name: '',
           regex: ''
@@ -393,6 +433,13 @@ export default {
       )
     },
     showLoggerConfig() {
+      this.logger.logPath = ''
+      this.logger.readPeriod = ''
+      this.logger.params = [{
+          name: '',
+          regex: ''
+        }]
+      this.loggers = []
       this.loggerConfigView = true
     },
     showCreate() {

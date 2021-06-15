@@ -1,14 +1,15 @@
 package com.admin.platform.controller;
 
-import com.admin.platform.dto.LoggersDTO;
-import com.admin.platform.dto.NewMemberDTO;
-import com.admin.platform.dto.RoleUpdateDTO;
+import com.admin.platform.dto.*;
 import com.admin.platform.service.HospitalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 @RestController
 @RequestMapping("/api/hospitals")
@@ -70,6 +71,24 @@ public class HospitalController {
     @PostMapping("/{hospitalId}")
     public ResponseEntity<?> sendLoggerConfig(
             @PathVariable Integer hospitalId, @RequestBody @Validated LoggersDTO loggersDTO) {
+        for (LoggerDTO l : loggersDTO.getLoggers()) {
+            for (ParamDTO p : l.getParams()) {
+                if (p.getRegex().contains("(") || p.getRegex().contains(")"))
+                    return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+                try {
+                    Pattern.compile(p.getRegex());
+                } catch (PatternSyntaxException exception) {
+                    return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+        try {
+            hospitalService.sendLoggerConfigurationToAdministration(hospitalId, loggersDTO);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }

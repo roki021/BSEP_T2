@@ -1,9 +1,6 @@
 package com.admin.platform.service;
 
-import com.admin.platform.dto.HospitalDTO;
-import com.admin.platform.dto.HospitalUserDTO;
-import com.admin.platform.dto.NewMemberDTO;
-import com.admin.platform.dto.RoleUpdateDTO;
+import com.admin.platform.dto.*;
 
 import java.util.List;
 
@@ -17,5 +14,5 @@ public interface HospitalService {
 
     void changeHospitalMemberRole(Integer hospitalId, Integer memberId, RoleUpdateDTO newRole) throws Exception;
 
-    void sendLoggerConfigurationToAdministration();
+    void sendLoggerConfigurationToAdministration(Integer hospitalId, LoggersDTO loggersDTO) throws Exception;
 }
