@@ -24,8 +24,10 @@ public class LogSimulatorLogger extends Logger {
     @Override
     public void writeMessage(String message) {
         LinkedHashMap<String, Object> params = super.logMessageParser.parse(message);
-        if (params == null)
+        if (params == null) {
+            System.err.println("Greska");
             return;
+        }
         Message msg = new Message(Long.parseLong(params.get("time").toString()), params, ActivationTag.LOG_SIMULATOR);
         super.broker.writeMessage(msg);
     }

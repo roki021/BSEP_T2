@@ -69,7 +69,7 @@ public class AuthController {
             token = authService.loginUser(loginDTO);
             if (token == null) {
                 logger.writeMessage(
-                        String.format("[WARN] %s %s %s- username %s ip %s",
+                        String.format("[WARNING] %s %s %s- username %s ip %s",
                                 simpleDateFormat.format(new Date()),
                                 "api/login",
                                 "NULLTOKEN",

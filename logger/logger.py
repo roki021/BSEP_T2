@@ -9,7 +9,7 @@ i = 0
 with open(log_path, 'a+') as f:
     while True:
         dtime = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        status = random.choice(['WARN'] * 5 + ['SUCCESS'] + ['ERROR'] * 30)
+        status = random.choice(['WARNING'] * 5 + ['SUCCESS'] + ['ERROR'] * 30)
         fields = {
             'username': random.choice(['jovan', 'boja', 'zoran', 'milan', 'marko']),
             'ip': random.choice(['127.0.0.2', '127.0.0.1', '127.0.0.3', '127.0.0.7', '127.0.0.5', '127.0.7.2'])
