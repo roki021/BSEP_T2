@@ -66,10 +66,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/devices/receive").permitAll()
                 .anyRequest().authenticated()
                     .and()
-                    .x509()
-                    .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
-                    .userDetailsService(userDetailsService())
-                    .and()
             .cors().and()
             .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService), BasicAuthenticationFilter.class);
 
@@ -84,7 +80,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        //web.ignoring().antMatchers(HttpMethod.GET, "/webjars/**", "/*.html", "/favicon.ico", "/**/*.html",
+        // web.ignoring().antMatchers(HttpMethod.GET, "/webjars/**", "/*.html", "/favicon.ico", "/**/*.html",
         //        "/**/*.css", "/**/*.js");
     }
 }

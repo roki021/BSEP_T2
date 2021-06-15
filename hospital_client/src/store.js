@@ -1,13 +1,15 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { postman } from "./postman.js";
+import VueJwtDecode from 'vue-jwt-decode'
 
 Vue.use(Vuex)
 
 export const store = new Vuex.Store({
     state: {
         token: localStorage.getItem('user-token') || '',
-        devices: []
+        devices: [],
+        alarms: []
     },
     actions: {
         requestAuth: ({commit}, user) => {
@@ -48,7 +50,6 @@ export const store = new Vuex.Store({
                     resolve(response.data);
                 })
                 .catch(err => {
-                    localStorage.removeItem('user-token')
                     reject(err)
                 })
             })
@@ -66,7 +67,34 @@ export const store = new Vuex.Store({
                     reject(err)
                 })
             })
-        }
+        },
+        getAlarms: ({commit}) => {
+            return new Promise((resolve, reject) => {
+                postman
+                .get(`${process.env.VUE_APP_HOSPITAL_API}/alarms`, {withCredentials: true})
+                .then(response => {
+                    commit('setAlarms', response.data)
+                    resolve(response.data);
+                })
+                .catch(err => {
+                    reject(err)
+                })
+            })
+        },
+        // eslint-disable-next-line no-unused-vars
+        addNewAlarm: ({commit}, alarm) => {
+            console.log(alarm);
+            return new Promise((resolve, reject) => {
+                postman
+                .post(`${process.env.VUE_APP_HOSPITAL_API}/alarms`, alarm, {withCredentials: true})
+                .then(response => {
+                    resolve(response.data);
+                })
+                .catch(err => {
+                    reject(err)
+                })
+            })
+        },
     },
     mutations: {
         login(state, token) {
@@ -77,9 +105,19 @@ export const store = new Vuex.Store({
         },
         setDevices(state, devices) {
             state.devices = devices;
+        },
+        setAlarms(state, alarms) {
+            state.alarms = alarms;
         }
     },
     getters: {
         isAuthenticated: state => !!state.token,
+        getRole: state => { 
+            try {
+                return VueJwtDecode.decode(state.token).role;
+            } catch(err) {
+                return null;
+            }
+        }
     }
 })

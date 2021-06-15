@@ -31,10 +31,13 @@ public class Alarm extends BasicRule {
     private int activationThreshold;
 
     @Column
+    private Long factWait;
+
+    @Column
     private String messageTracker;
 
     @MapKey(name = "id")
-    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true ,  mappedBy = "id")
+    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true,  mappedBy = "id")
     private Map<String, Trigger> triggers;
 
     @Transient
@@ -93,6 +96,7 @@ public class Alarm extends BasicRule {
         this.activationThreshold = activationThreshold;
         this.messageTracker = messageTracker;
         this.historian = new Historian(factWait);
+        this.factWait = factWait;
         this.alarmMessage = alarmMessage;
         this.triggerNames = triggersNames;
         this.callback = alarmCallback;
@@ -158,6 +162,18 @@ public class Alarm extends BasicRule {
 
     public Long getId() {
         return id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public Map<String, Trigger> getTriggers() {
+        return triggers;
+    }
+
+    public void setTriggers(Map<String, Trigger> triggers) {
+        this.triggers = triggers;
     }
 
     public String getAlarmMessage() {

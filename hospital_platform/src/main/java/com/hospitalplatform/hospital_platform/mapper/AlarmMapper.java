@@ -14,7 +14,7 @@ public class AlarmMapper {
         LinkedHashMap<String, Trigger> triggers = new LinkedHashMap<>();
         for(String key : alarmDTO.getTriggers().keySet()) {
             triggers.put(key, new Trigger(
-                    alarmDTO.getId(),
+                    (long)alarmDTO.getTriggers().get(key).getId(),
                     alarmDTO.getTriggers().get(key).getRelation(),
                     alarmDTO.getTriggers().get(key).getValue()
             ));

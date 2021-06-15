@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,9 @@ public class AuthServiceImpl implements AuthService {
         String fingerprint = generateFingerprint();
 
         HospitalUser user = (HospitalUser) authentication.getPrincipal();
-        String jwt = tokenUtils.generateToken(user.getUsername(), hashedFingerprint(fingerprint));
+        String jwt = tokenUtils.generateToken(user.getUsername(),
+                ((SimpleGrantedAuthority)user.getAuthorities().toArray()[0]).getAuthority(),
+                hashedFingerprint(fingerprint));
         int expiredIn = tokenUtils.getExpiredIn();
 
         return new IntermediateToken(

@@ -34,7 +34,7 @@
             </template>
           </vs-table>
           <vs-col offset="10">
-            <vs-button transparent @click="activateAdding()">Add new</vs-button>
+            <vs-button v-if="this.$store.getters.getRole === 'ROLE_ADMIN'" transparent @click="activateAdding()">Add new</vs-button>
           </vs-col>
         </div>
       </vs-col>
@@ -136,6 +136,14 @@ export default {
   mounted() {
     this.$store.dispatch("getAllDevices").then(() => {
       this.devices = this.$store.state.devices;
+    })
+    .catch(err => {
+      console.log(err);
+      this.$vs.notification({
+            color: "danger",
+            title: "Something went wrong",
+            text: "Already added device.",
+          });
     });
   },
 };

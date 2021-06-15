@@ -92,9 +92,9 @@ def message_generator(pulse_state, pressure_state, temp_state):
     now = datetime.now()
 
     P = pulse_state_machine(pulse_state)
-    UBP = pressure_high_state_machine(pulse_state)
-    LBP = pressure_low_state_machine(pulse_state)
-    BT = temp_state_machine(pulse_state)
+    UBP = pressure_high_state_machine(pressure_state)
+    LBP = pressure_low_state_machine(pressure_state)
+    BT = temp_state_machine(temp_state)
     params = f"IP {API_HOST} P {P} UBP {UBP} LBP {LBP} BT {BT}"
     return MESSAGE_FORMAT.format(
         now.strftime("%Y-%m-%d %H:%M:%S"),
@@ -135,7 +135,7 @@ def check_ocsp():
 
 def send_message(message):
     try:
-        send_request(HOSPITAL_HOST, HOSPITAL_PORT, ENDPOINT, 'POST', TOKEN, message, API_CRT, API_KEY, API_CA_T, False)
+        send_request(HOSPITAL_HOST, HOSPITAL_PORT, ENDPOINT, 'POST', TOKEN, message, API_CRT, API_KEY, API_CA_T)
     except Exception as ex:
         print(ex)
 

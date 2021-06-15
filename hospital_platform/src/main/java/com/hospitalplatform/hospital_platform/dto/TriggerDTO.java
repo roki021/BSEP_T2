@@ -14,6 +14,10 @@ public class TriggerDTO {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public Double getMinValue() {
         return minValue;
     }

@@ -39,7 +39,7 @@ public class TokenUtils {
 
     private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
-    public String generateToken(String username, String fingerprintHash) {
+    public String generateToken(String username, String role, String fingerprintHash) {
         return Jwts.builder()
                 .setIssuer(APP_NAME)
                 .setSubject(username)
@@ -47,6 +47,7 @@ public class TokenUtils {
                 .setIssuedAt(new Date())
                 .setExpiration(generateExpirationDate())
                 .claim("userFingerprint", fingerprintHash)
+                .claim("role", role)
                 .signWith(SIGNATURE_ALGORITHM, SECRET).compact();
     }
 

@@ -12,5 +12,5 @@ public interface AlarmService {
 
     void removeAlarm(Long id) throws UnexpectedSituation;
 
-    List<AlarmDTO> getAll();
+    List<AlarmDTO> getAllByTags(int activationTags);
 }

@@ -6,6 +6,7 @@
           <i style="font-size: 25px" class='bx bx-plus-medical'></i>
         </template>
         <vs-navbar-item
+          v-if="this.$store.getters.getRole === 'ROLE_ADMIN'"
           :active="active == 'certificate_request'"
           v-on:click="$router.push('certificate_request')"
           id="certificate_request"
@@ -20,6 +21,14 @@
           Devices
         </vs-navbar-item>
         <vs-navbar-item
+          :active="active == 'alarms'"
+          v-on:click="$router.push('alarms')"
+          id="alarms"
+        >
+          Alarms
+        </vs-navbar-item>
+        <vs-navbar-item
+          v-if="this.$store.getters.getRole === 'ROLE_ADMIN'"
           :active="active == 'security'"
           v-on:click="$router.push('security')"
           id="security"
@@ -57,6 +66,7 @@ export default {
     }
   },
   mounted: function () {
+    console.log(this.$store.getters.getRole);
     var raw = this.$route.path
     this.active = raw.substring(1, raw.length)
   }
