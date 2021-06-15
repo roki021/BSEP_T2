@@ -71,10 +71,10 @@ public class AuthController {
                 logger.writeMessage(
                         String.format("[WARN] %s %s %s- username %s ip %s",
                                 simpleDateFormat.format(new Date()),
-                                loginDTO.getUsername(),
-                                request.getRemoteAddr(),
                                 "api/login",
-                                "ID"));
+                                "NULLTOKEN",
+                                loginDTO.getUsername(),
+                                request.getRemoteAddr()));
                 return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
             }
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
