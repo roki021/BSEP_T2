@@ -26,10 +26,15 @@ public class Message {
     @NotNull
     private ActivationTag tag;
 
-    public Message(Long time, LinkedHashMap<String, Object> fields, ActivationTag tag) {
+    @Field
+    @NotNull
+    private String raw;
+
+    public Message(Long time, LinkedHashMap<String, Object> fields, ActivationTag tag, String raw) {
         this.time = time;
         this.fields = fields;
         this.tag = tag;
+        this.raw = raw;
     }
 
     public Message() {}
@@ -54,5 +59,13 @@ public class Message {
 
     public void setTag(String tagName) {
         this.tag = ActivationTag.valueOf(tagName);
+    }
+
+    public String getRaw() {
+        return raw;
+    }
+
+    public void setRaw(String raw) {
+        this.raw = raw;
     }
 }

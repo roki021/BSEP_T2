@@ -10,4 +10,7 @@ public interface MessageRepository extends PagingAndSortingRepository<Message, L
 
     @Query("#{#n1ql.selectEntity} WHERE #{#n1ql.filter} AND tag = $1")
     List<Message> findAllByTag(String tag);
+
+    @Query("#{#n1ql.selectEntity} WHERE #{#n1ql.filter} AND tag = 'SEC' OR tag = 'LOG_SIMULATOR'")
+    List<Message> findAllLogs();
 }

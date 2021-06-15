@@ -28,7 +28,7 @@ public class LogSimulatorLogger extends Logger {
             System.err.println("Greska");
             return;
         }
-        Message msg = new Message(Long.parseLong(params.get("time").toString()), params, ActivationTag.LOG_SIMULATOR);
+        Message msg = new Message(Long.parseLong(params.get("time").toString()), params, ActivationTag.LOG_SIMULATOR, message);
         super.broker.writeMessage(msg);
     }
 

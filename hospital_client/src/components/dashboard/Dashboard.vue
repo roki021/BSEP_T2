@@ -29,6 +29,14 @@
         </vs-navbar-item>
         <vs-navbar-item
           v-if="this.$store.getters.getRole === 'ROLE_ADMIN'"
+          :active="active == 'logs'"
+          v-on:click="$router.push('logs')"
+          id="logs"
+        >
+          Logs
+        </vs-navbar-item>
+        <vs-navbar-item
+          v-if="this.$store.getters.getRole === 'ROLE_ADMIN'"
           :active="active == 'security'"
           v-on:click="$router.push('security')"
           id="security"

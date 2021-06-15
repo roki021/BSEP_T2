@@ -16,7 +16,7 @@ public class AuthLogger extends Logger {
         LinkedHashMap<String, Object> params = super.logMessageParser.parse(message);
         if (params == null)
             return;
-        Message msg = new Message(Long.parseLong(params.get("time").toString()), params, ActivationTag.SEC);
+        Message msg = new Message(Long.parseLong(params.get("time").toString()), params, ActivationTag.SEC, message);
         super.broker.writeMessage(msg);
     }
 }

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import Login from './components/auth/Login.vue'
 import Dashboard from './components/dashboard/Dashboard.vue'
+import Logs from './components/dashboard/Logs.vue'
 import CertificateRequest from './components/dashboard/CertificateRequest.vue'
 import Devices from './components/dashboard/Devices.vue'
 import Security from './components/dashboard/Security.vue'
@@ -66,6 +67,17 @@ const routes = [
         path: 'alarms',
         component: Alarm
       },
+      {
+        path: 'logs',
+        component: Logs,
+        beforeEnter: (to, from, next) => {
+          if(store.getters.getRole === "ROLE_ADMIN") {
+            next();
+            return;
+          }
+          next('/403');
+        }
+      }
     ],
     beforeEnter: ifAuthenticated
   },

@@ -19,7 +19,7 @@ public class DeviceLogger extends Logger {
         if (params == null)
             return;
 
-        Message msg = new Message(Long.parseLong(params.get("time").toString()), params, ActivationTag.DEVICE);
+        Message msg = new Message(Long.parseLong(params.get("time").toString()), params, ActivationTag.DEVICE, message);
         super.broker.writeMessage(msg);
     }
 }

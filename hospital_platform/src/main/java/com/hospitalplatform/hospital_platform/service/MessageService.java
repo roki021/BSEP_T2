@@ -9,4 +9,6 @@ public interface MessageService {
     Message saveDeviceMessage(Message message);
 
     List<Message> getAllDeviceMessages();
+
+    List<Message> getAllLogs();
 }

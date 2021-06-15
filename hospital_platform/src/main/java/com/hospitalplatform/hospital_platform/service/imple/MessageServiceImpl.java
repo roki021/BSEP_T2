@@ -28,4 +28,9 @@ public class MessageServiceImpl implements MessageService {
     public List<Message> getAllDeviceMessages() {
         return messageRepository.findAllByTag(ActivationTag.SEC.name());
     }
+
+    @Override
+    public List<Message> getAllLogs() {
+        return messageRepository.findAllLogs();
+    }
 }
