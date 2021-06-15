@@ -36,6 +36,7 @@ public class AlarmController {
     private Logger logger;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<?> getAll(HttpServletRequest request, Principal principal) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         logger.writeMessage(
@@ -60,7 +61,7 @@ public class AlarmController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR') && hasAuthority('WRITE_ALARMS_PRIVILEGE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<?> addAlarm(@RequestBody AlarmDTO alarmDTO, HttpServletRequest request, Principal principal) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -95,7 +96,7 @@ public class AlarmController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR') && hasAuthority('DELETE_ALARMS_PRIVILEGE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<?> removeAlarm(@PathVariable Long id, HttpServletRequest request) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {

@@ -10,8 +10,6 @@ import com.admin.platform.repository.HospitalRepository;
 import com.admin.platform.repository.RevokedCertificateRepository;
 import com.admin.platform.service.CertificateSigningRequestService;
 import com.admin.platform.service.DigitalCertificateService;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -89,9 +87,9 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
             SubjectData subjectData = generateSubjectData(
                     certificateSigningRequestService.getPublicKeyFromCSR(csrId),
-                    subjectName.build(), TemplateTypes.LEAF_HOSPITAL, generalNames, String.valueOf(csr.getId()));
+                    subjectName.build(), templateType, generalNames, String.valueOf(csr.getId()));
 
-            X509Certificate certificate = generateCertificate(subjectData, issuerData, TemplateTypes.LEAF_HOSPITAL);
+            X509Certificate certificate = generateCertificate(subjectData, issuerData, templateType);
             DigitalCertificate digitalCertificate = new DigitalCertificate(
                     new BigInteger(csr.getId().toString()));
             digitalCertificate.setStartDate(new java.sql.Timestamp(subjectData.getStartDate().getTime()));
@@ -187,8 +185,10 @@ public class DigitalCertificateServiceImpl implements DigitalCertificateService 
 
         if (templateType == TemplateTypes.ROOT) {
             endDate = generateDate(CryptConstants.ROOT_PERIOD_MONTHS);
+        } else if (templateType == TemplateTypes.HOSPITAL){
+            endDate = generateDate(CryptConstants.HOSPITAL_PERIOD_MONTHS);
         } else {
-            endDate = generateDate(CryptConstants.LEAF_PERIOD_MONTHS);
+            endDate = generateDate(CryptConstants.DEVICE_PERIOD_MONTHS);
         }
 
         return new SubjectData(

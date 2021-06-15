@@ -2,7 +2,8 @@ package com.admin.platform.constants;
 
 public enum TemplateTypes {
     ROOT("ROOT"),
-    LEAF_HOSPITAL("LEAF_HOSPITAL");
+    HOSPITAL("HOSPITAL"),
+    DEVICE("DEVICE");
 
     private final String text;
 

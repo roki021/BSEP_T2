@@ -100,7 +100,7 @@ public class MercuryConfig {
                     (alarm) -> {
                         System.out.println(alarm.message());
                     },
-                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
+                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.DEVICE.getTag(),
                     new LinkedHashMap<>() {{
                         put("status", triggerRepository.save(new Trigger(2L, Relation.CONTAINS, "SUCCESS,ERROR,INFO,WARN")));
                     }},
@@ -120,7 +120,7 @@ public class MercuryConfig {
                     (alarm) -> {
                         System.out.println(alarm.message());
                     },
-                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.LOG_SIMULATOR.getTag(),
+                    ActivationTag.SEC.getTag() | ActivationTag.LOG_SIMULATOR.getTag() | ActivationTag.DEVICE.getTag(),
                     new LinkedHashMap<>() {{
                         put("status", triggerRepository.save(new Trigger(3L, Relation.EQ, "ERROR")));
                     }},

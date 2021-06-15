@@ -247,6 +247,7 @@ export default {
     handleClose() {
       this.active = false;
       this.isHidden = true;
+      this.waitingResponse = false;
     },
     toDate(unixtime) {
       console.log(unixtime);
@@ -274,7 +275,6 @@ export default {
         )
         .then(() => {
           this.waitingResponse = false;
-          console.log("sss");
           this.certificates[this.selectedIndex].revoked = true;
           this.$vs.notification({
             color: "success",
@@ -282,15 +282,15 @@ export default {
             title: "Successfully revoked",
             text: "Certificate is revoked.",
           });
+          this.handleClose();
         })
         .catch(() => {
-          this.waitingResponse = false;
-
           this.$vs.notification({
             color: "danger",
             title: "Something went wrong",
             text: "Try it again in a few moments",
           });
+          this.handleClose();
         });
     },
   },

@@ -34,7 +34,7 @@
         </div>
       </vs-col>
     </vs-row>
-    <vs-dialog v-model="active">
+    <vs-dialog v-model="active" @close="handleClose">
       <template #header>
         <h4 class="not-margin">Certificate Signing Request</h4>
       </template>
@@ -42,53 +42,95 @@
       <div class="con-form">
         <div class="center grid">
           <vs-row v-if="activeRequest.commonName">
-            <vs-col w="6"><div class="wrapper"><b>Common name</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.commonName }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Common name</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">{{ activeRequest.commonName }}</div></vs-col
+            >
           </vs-row>
           <vs-row v-if="activeRequest.surname">
-            <vs-col w="6"><div class="wrapper"><b>Surname</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.surname }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Surname</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">{{ activeRequest.surname }}</div></vs-col
+            >
           </vs-row>
           <vs-row v-if="activeRequest.givenName">
-            <vs-col w="6"><div class="wrapper"><b>Given name</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.givenName }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Given name</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">{{ activeRequest.givenName }}</div></vs-col
+            >
           </vs-row>
           <vs-row v-if="activeRequest.organization">
-            <vs-col w="6"><div class="wrapper"><b>Organization</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.organization }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Organization</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ activeRequest.organization }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="activeRequest.organizationUnit">
-            <vs-col w="6"><div class="wrapper"><b>Organization unit</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.organizationUnit }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Organization unit</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ activeRequest.organizationUnit }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="activeRequest.country">
-            <vs-col w="6"><div class="wrapper"><b>Country</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.country }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Country</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">{{ activeRequest.country }}</div></vs-col
+            >
           </vs-row>
           <vs-row v-if="activeRequest.email">
-            <vs-col w="6"><div class="wrapper"><b>Email</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.email }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Email</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">{{ activeRequest.email }}</div></vs-col
+            >
           </vs-row>
           <vs-row v-if="activeRequest.uniqueIdentifier">
-            <vs-col w="6"><div class="wrapper"><b>Unique identifier</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.uniqueIdentifier }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>Unique identifier</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">
+                {{ activeRequest.uniqueIdentifier }}
+              </div></vs-col
+            >
           </vs-row>
           <vs-row v-if="activeRequest.title">
-            <vs-col w="6"><div class="wrapper"><b>CSR Type</b></div></vs-col>
-            <vs-col w="6"><div class="wrapper">{{ activeRequest.title }}</div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper"><b>CSR Type</b></div></vs-col
+            >
+            <vs-col w="6"
+              ><div class="wrapper">{{ activeRequest.title }}</div></vs-col
+            >
           </vs-row>
           <vs-row align="center" justify="center">
-            <vs-col w="6"><div class="wrapper-template-input"><b>Template</b></div></vs-col>
+            <vs-col w="6"
+              ><div class="wrapper-template-input"><b>Template</b></div></vs-col
+            >
             <vs-col w="6">
               <div class="wrapper-template-input">
                 <vs-select placeholder="Select" v-model="template">
-            <vs-option label="INTERMEDIATE" value="intermediate">
-              INTERMEDIATE
-            </vs-option>
-            <vs-option label="LEAF_HOSPITAL" value="LEAF_HOSPITAL">
-              LEAF_HOSPITAL
-            </vs-option>
-          </vs-select>
+                  <vs-option label="DEVICE" value="DEVICE"> DEVICE </vs-option>
+                  <vs-option label="HOSPITAL" value="HOSPITAL">
+                    HOSPITAL
+                  </vs-option>
+                </vs-select>
               </div>
             </vs-col>
           </vs-row>
@@ -97,7 +139,13 @@
 
       <template #footer>
         <div class="footer-dialog">
-          <vs-button :loading="waitingResponse" block v-on:click="issueCertificate()"> Issue certificate </vs-button>
+          <vs-button
+            :loading="waitingResponse"
+            block
+            v-on:click="issueCertificate()"
+          >
+            Issue certificate
+          </vs-button>
         </div>
       </template>
     </vs-dialog>
@@ -113,34 +161,49 @@ export default {
     activeRequest: {},
     activeRequestIndex: 0,
     waitingResponse: false,
-    template: 'LEAF_HOSPITAL'
+    template: "HOSPITAL",
   }),
   methods: {
-    activate (index) {
-      this.active = true
-      this.activeRequestIndex = index
-      this.activeRequest = this.requests[index]
+    activate(index) {
+      this.active = true;
+      this.activeRequestIndex = index;
+      this.activeRequest = this.requests[index];
     },
-    issueCertificate () {
+    handleClose() {
+      this.active = false;
+      this.waitingResponse = false;
+    },
+    issueCertificate() {
       this.waitingResponse = true;
 
       axios
-      .post(`${process.env.VUE_APP_ADMIN_API}/issue-certificate/${this.activeRequest.id}/${this.template}`)
-      .then(() => {
-        this.waitingResponse = false;
-        this.active = false;
+        .post(
+          `${process.env.VUE_APP_ADMIN_API}/issue-certificate/${this.activeRequest.id}/${this.template}`
+        )
+        .then(() => {
+          this.waitingResponse = false;
+          this.active = false;
 
-        // success, remove from 
-        this.requests.splice(this.activeRequestIndex, 1)
+          // success, remove from
+          this.requests.splice(this.activeRequestIndex, 1);
 
-        this.$vs.notification({
-            color: 'success',
+          this.$vs.notification({
+            color: "success",
             position: null,
-            title: 'Successfully issued',
-            text: 'New CER successfully created and distributed to subject.'
+            title: "Successfully issued",
+            text: "New CER successfully created and distributed to subject.",
+          });
+          this.handleClose();
         })
-      })
-    }
+        .catch(() => {
+          this.$vs.notification({
+            color: "danger",
+            title: "Something went wrong",
+            text: "Try it again in a few moments",
+          });
+          this.handleClose();
+        });
+    },
   },
   mounted() {
     axios
@@ -160,7 +223,8 @@ export default {
   padding-top: 15px;
 }
 
-.wrapper-template-input, .footer-dialog {
+.wrapper-template-input,
+.footer-dialog {
   padding-top: 30px;
 }
 </style>

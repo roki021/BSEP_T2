@@ -70,7 +70,8 @@ public class PKIController {
         }
 
         if (!templateName.equals(TemplateTypes.ROOT.toString()) &&
-                !templateName.equals(TemplateTypes.LEAF_HOSPITAL.toString())) {
+                !templateName.equals(TemplateTypes.HOSPITAL.toString()) &&
+                !templateName.equals(TemplateTypes.DEVICE.toString())) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
